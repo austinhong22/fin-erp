@@ -12,7 +12,7 @@ public class DepartmentService {
     private final DepartmentDAO dao = new DepartmentDAO();
     private static final String DEFAULT_COMPANY_ID = "CP-001"; // 고정된 회사 ID
 
-    // 💡 1. 부서 등록 로직 (비즈니스 로직 처리)
+    //  1. 부서 등록 로직 (비즈니스 로직 처리)
     public void register(String name, String code) {
 
         // 1. DTO 생성 및 값 설정
@@ -41,7 +41,7 @@ public class DepartmentService {
 
     }
 
-    // 💡 2. 부서 전체 조회
+    //  2. 부서 전체 조회
     public List<DepartmentDTO> getAllDepartments() {
         try {
             return dao.selectAll();
