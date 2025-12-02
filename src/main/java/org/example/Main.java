@@ -34,7 +34,7 @@ public class Main {
             System.out.println("\n=== ERP Accounting System ===");
             System.out.println("1. 기초정보 관리(부서/계정/거래처/계좌)");
             System.out.println("2. 전표 입력");
-            System.out.println("3. 리포트 ");
+            System.out.println("3. 리포트");
             System.out.println("0. 종료");
             System.out.print("선택 > ");
 
