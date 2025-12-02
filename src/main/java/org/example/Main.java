@@ -1,10 +1,31 @@
 package org.example;
 
+import org.example.config.DBUtil;
+
+import java.sql.Connection;
 import java.util.Scanner;
 
 
 public class Main {
     public static void main(String[] args) {
+
+        // ==========================================
+        // 🔍 [DB 연결 테스트 구역] 시작
+        // ==========================================
+        System.out.println("DB 연결을 시도합니다...");
+        try (Connection conn = DBUtil.getConnection()) {
+            if (conn != null) {
+                System.out.println("DB 연결 성공! (객체: " + conn + ")");
+            } else {
+                System.out.println("DB 연결 실패 (conn is null)");
+            }
+        } catch (Exception e) {
+            System.out.println("에러 발생! 사유:");
+            e.printStackTrace();
+        System.out.println("==========================================\n");
+        // ==========================================
+        // 🔍 [DB 연결 테스트 구역] 끝
+        // ==========================================
 
         Scanner sc = new Scanner(System.in);
 
