@@ -1,58 +1,31 @@
 package org.example.dto;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public class Company {
-    private String id;
-    private String name;
-    private String businessNo;
-    private LocalDateTime createdAt;
-    //기본 생성자
-    public Company() {
-        this.id = UUID.randomUUID().toString();
-        this.createdAt = LocalDateTime.now();
-    }
-    //전체 생성자
-    public Company(String name,String businessNo){
-        this.id = UUID.randomUUID().toString();
+
+    private String id;               // DAO에서 생성
+    private final String name;       // 회사명
+    private final String businessNo; // 사업자번호(고유)
+    private final LocalDateTime createdAt; // 생성일자
+
+    public Company(String name, String businessNo) {
         this.name = name;
         this.businessNo = businessNo;
         this.createdAt = LocalDateTime.now();
     }
 
-    public String getId() {
-        return id;
-    }
-
+    // DAO 전용
     public void setId(String id) {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
+    // Getter
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public String getBusinessNo() { return businessNo; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getBusinessNo() {
-        return businessNo;
-    }
-
-    public void setBusinessNo(String businessNo) {
-        this.businessNo = businessNo;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-    //자동출력문
     @Override
     public String toString() {
         return "Company{" +
