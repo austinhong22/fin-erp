@@ -1,57 +1,45 @@
 package org.example.dao;
 
 import org.example.dto.Department;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class DepartmentDao {
 
-    // 메모리 저장소
-    private final List<Department> departmentList = new ArrayList<>();
+    // Map을 사용해서 id → Department 저장 구조로 개선
+    private static final Map<String, Department> departmentStore = new HashMap<>();
+
+    // ID는 DAO가 생성한다
+    private String generateId() {
+        return UUID.randomUUID().toString();
+    }
 
     // CREATE
     public void addDepartment(Department dept) {
-        departmentList.add(dept);
+        String id = generateId();
+        dept.setId(id);   // DTO에 id 세팅 (DAO 전용)
+        departmentStore.put(id, dept);
     }
 
-    // READ (전체 조회)
+    // READ - 전체 조회
     public List<Department> findAll() {
-        return departmentList;
+        return new ArrayList<>(departmentStore.values());
     }
 
-    // READ (ID로 조회)
-    public Department findById(String id) {
-        for (Department d : departmentList) {
-            if (d.getId().equals(id)) return d;
-        }
-        return null;
-    }
-
-    // READ (특정 회사의 부서 조회)
+    // READ - 특정 회사의 부서들 조회
     public List<Department> findByCompanyId(String companyId) {
-        List<Department> result = new ArrayList<>();
-        for (Department d : departmentList) {
-            if (d.getCompanyId().equals(companyId)) {
-                result.add(d);
-            }
-        }
-        return result;
+        return departmentStore.values().stream()
+                .filter(d -> d.getCompanyId().equals(companyId))
+                .collect(Collectors.toList());
     }
 
-    // UPDATE
-    public boolean updateDepartment(Department updated) {
-        for (int i = 0; i < departmentList.size(); i++) {
-            if (departmentList.get(i).getId().equals(updated.getId())) {
-                departmentList.set(i, updated);
-                return true;
-            }
-        }
-        return false;
+    // READ - 하나 조회
+    public Department findById(String id) {
+        return departmentStore.get(id);
     }
 
     // DELETE
     public boolean deleteDepartment(String id) {
-        return departmentList.removeIf(d -> d.getId().equals(id));
+        return departmentStore.remove(id) != null;
     }
 }
