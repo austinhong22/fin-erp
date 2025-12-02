@@ -60,3 +60,12 @@ $RECYCLE.BIN/
 *.log
 logs/
 log/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# DB Data Source 설정 파일
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/data_source_mapping.xml
