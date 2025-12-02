@@ -22,6 +22,7 @@ public class Main {
         } catch (Exception e) {
             System.out.println("에러 발생! 사유:");
             e.printStackTrace();
+        }
         System.out.println("==========================================\n");
         // ==========================================
         // 🔍 [DB 연결 테스트 구역] 끝
@@ -30,16 +31,16 @@ public class Main {
         Scanner sc = new Scanner(System.in);
 
         while (true) {
-            System.out.println("\\n=== ERP Accounting System ===");
+            System.out.println("\n=== ERP Accounting System ===");
             System.out.println("1. 기초정보 관리(부서/계정/거래처/계좌)");
             System.out.println("2. 전표 입력");
             System.out.println("3. 리포트 ");
             System.out.println("0. 종료");
-            System.out.print("선택 >");
+            System.out.print("선택 > ");
 
             String choice = sc.nextLine();
 
-            if("0".equals(choice)){
+            if ("0".equals(choice)) {
                 System.out.println("시스템 종료");
                 break;
             } else if ("1".equals(choice)) {
@@ -48,12 +49,10 @@ public class Main {
                 System.out.println("전표입력 기능");
             } else if ("3".equals(choice)) {
                 System.out.println("리포트 기능");
-            }else {
+            } else {
                 System.out.println("잘못 입력했습니다. 다시 입력해주세요");
             }
         }
         sc.close();
     }
-
-
 }
