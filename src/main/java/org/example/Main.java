@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.config.DBUtil;
+import org.example.view.PartyController;
 
 import java.sql.Connection;
 import java.util.Scanner;
@@ -29,7 +30,7 @@ public class Main {
         // ==========================================
 
         Scanner sc = new Scanner(System.in);
-
+        PartyController pc = new PartyController(sc);
         while (true) {
             System.out.println("\n=== ERP Accounting System ===");
             System.out.println("1. 기초정보 관리(부서/계정/거래처/계좌)");
@@ -44,6 +45,7 @@ public class Main {
                 System.out.println("시스템 종료");
                 break;
             } else if ("1".equals(choice)) {
+                pc.start();
                 System.out.println("기초정보관리 시스템");
             } else if ("2".equals(choice)) {
                 System.out.println("전표입력 기능");
