@@ -17,13 +17,21 @@ public class DepartmentService {
     // 부서 등록
     public DepartmentDTO registerDepartment(String companyId, String name, String code) {
 
-        // 회사 존재 여부 확인
+        // 회사 존재 검증
         CompanyDTO company = companyDAO.selectById(companyId);
         if (company == null) {
-            throw new IllegalArgumentException("존재하지 않는 회사입니다.");
+            throw new IllegalArgumentException("존재하지 않는 회사입니다: " + companyId);
         }
 
-        // 부서 객체 생성
+        // 입력 검증
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("부서명은 비워둘 수 없습니다.");
+        }
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("부서코드는 비워둘 수 없습니다.");
+        }
+
+        // DTO 생성
         DepartmentDTO dto = new DepartmentDTO(
                 UUID.randomUUID().toString(),
                 companyId,
@@ -35,7 +43,29 @@ public class DepartmentService {
         return dto;
     }
 
-    // 회사의 부서 목록 조회
+    // 부서 수정
+    public boolean updateDepartment(String deptId, String newName, String newCode) {
+
+        DepartmentDTO existing = departmentDAO.selectById(deptId);
+        if (existing == null) {
+            throw new IllegalArgumentException("존재하지 않는 부서입니다: " + deptId);
+        }
+
+        if (newName == null || newName.isBlank()) {
+            throw new IllegalArgumentException("부서명은 비워둘 수 없습니다.");
+        }
+        if (newCode == null || newCode.isBlank()) {
+            throw new IllegalArgumentException("부서코드는 비워둘 수 없습니다.");
+        }
+
+        existing.setName(newName);
+        existing.setCode(newCode.toUpperCase());
+
+        int rows = departmentDAO.update(existing);
+        return rows > 0;
+    }
+
+    // 회사의 전체 부서 목록 조회
     public List<DepartmentDTO> getDepartmentsByCompanyId(String companyId) {
         return departmentDAO.selectByCompanyId(companyId);
     }
