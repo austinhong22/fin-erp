@@ -14,15 +14,44 @@ public class CompanyService {
     // 회사 등록
     public CompanyDTO registerCompany(String name, String businessNo) {
 
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("회사명은 비워둘 수 없습니다.");
+        }
+        if (businessNo == null || businessNo.isBlank()) {
+            throw new IllegalArgumentException("사업자번호는 비워둘 수 없습니다.");
+        }
+
         CompanyDTO dto = new CompanyDTO(
-                UUID.randomUUID().toString(), // UUID 생성
+                UUID.randomUUID().toString(),
                 name,
                 businessNo,
-                null  // created_at은 DB NOW() 사용
+                null // created_at은 DB NOW()로 생성
         );
 
         companyDAO.insert(dto);
         return dto;
+    }
+
+    // 회사 수정
+    public boolean updateCompany(String id, String newName, String newBusinessNo) {
+
+        CompanyDTO existing = companyDAO.selectById(id);
+        if (existing == null) {
+            throw new IllegalArgumentException("존재하지 않는 회사입니다: " + id);
+        }
+
+        if (newName == null || newName.isBlank()) {
+            throw new IllegalArgumentException("회사명은 비워둘 수 없습니다.");
+        }
+        if (newBusinessNo == null || newBusinessNo.isBlank()) {
+            throw new IllegalArgumentException("사업자번호는 비워둘 수 없습니다.");
+        }
+
+        existing.setName(newName);
+        existing.setBusinessNo(newBusinessNo);
+
+        int rows = companyDAO.update(existing);
+        return rows > 0;
     }
 
     // 전체 조회
@@ -30,7 +59,7 @@ public class CompanyService {
         return companyDAO.selectAll();
     }
 
-    // ID로 조회
+    // ID 조회
     public CompanyDTO getById(String id) {
         return companyDAO.selectById(id);
     }

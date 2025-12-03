@@ -20,8 +20,13 @@ public class DepartmentDTO {
     public void setId(String id) { this.id = id; }
 
     public String getCompanyId() { return companyId; }
+    public void setCompanyId(String companyId) { this.companyId = companyId; }
+
     public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
     public String getCode() { return code; }
+    public void setCode(String code) { this.code = code; }
 
     @Override
     public String toString() {
