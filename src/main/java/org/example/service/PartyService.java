@@ -3,6 +3,7 @@ package org.example.service;
 
 import org.example.dao.PartyDAO;
 import org.example.dto.PartyDTO;
+import org.example.dto.PartyLedgerDTO;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -49,4 +50,27 @@ public class PartyService {
 
         return dao.selectByType(searchType);
     }
+
+    // 거래처 전체 목록 조회 기능 추가 (PartyController의 searchMenu에 필요)
+    public List<PartyDTO> getAllParties() throws SQLException {
+        return dao.selectAll();
+    }
+
+    // 거래처 이름 키워드 검색 기능 추가 (PartyController의 searchMenu에 필요)
+    public List<PartyDTO> searchParties(String keyword) throws SQLException {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            throw new IllegalArgumentException("검색 키워드는 필수입니다.");
+        }
+        return dao.searchPartiesByName(keyword);
+    }
+
+    // 💡 4. 거래처 원장 상세 내역 조회 (핵심 미션 구현)
+    public List<PartyLedgerDTO> getLedgerLinesByPartyId(String partyId) throws SQLException {
+        if (partyId == null || partyId.trim().isEmpty()) {
+            throw new IllegalArgumentException("거래처 ID는 필수입니다.");
+        }
+        // DAO에서 PartyLedgerDTO 리스트를 받아 Controller로 전달
+        return dao.selectLedgerLinesByPartyId(partyId);
+    }
+
 }
