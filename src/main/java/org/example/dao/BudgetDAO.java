@@ -3,7 +3,7 @@ package org.example.dao;
 import org.example.config.DBUtil;
 import org.example.dto.BudgetDTO;
 
-import java.math.BigDecimal; // ★ BigDecimal import
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
 public class BudgetDAO {
 
     // ============================
-    // 1. INSERT
+    // 1. INSERT (예산 등록)
     // ============================
     public int insert(BudgetDTO dto) {
         String sql = "INSERT INTO `budget` (`id`, `company_id`, `department_id`, `gl_account_id`, `year_month`, `budget_amount`) VALUES (?, ?, ?, ?, ?, ?)";
@@ -34,7 +34,7 @@ public class BudgetDAO {
     }
 
     // ============================
-    // 2. 중복 체크
+    // 2. 중복 체크 (exists)
     // ============================
     public boolean exists(String departmentId, String glAccountId, String yearMonth) {
         String sql = "SELECT COUNT(*) FROM `budget` WHERE `department_id` = ? AND `gl_account_id` = ? AND `year_month` = ?";
@@ -48,16 +48,13 @@ public class BudgetDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) > 0; // COUNT 결과가 1 이상이면 true (중복)
+                    return rs.getInt(1) > 0; // 1개 이상이면 true (중복)
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            // DB 연결 오류 시, 안전을 위해 중복으로 간주하고 true 반환
-            return true;
+            return true; // 에러 시 안전하게 중복으로 간주
         }
-
-        // 결과가 0인 경우 (중복 없음)
         return false;
     }
 
@@ -91,5 +88,40 @@ public class BudgetDAO {
         return list;
     }
 
-    // 이 외의 다른 메서드들은 생략했습니다.
+    // ============================
+    // 4. UPDATE (예산 금액 수정) - ★ 추가됨
+    // ============================
+    public int updateAmount(String id, BigDecimal newAmount) {
+        String sql = "UPDATE `budget` SET `budget_amount` = ? WHERE `id` = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setBigDecimal(1, newAmount);
+            pstmt.setString(2, id);
+
+            return pstmt.executeUpdate(); // 수정된 행 개수 반환
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    // ============================
+    // 5. DELETE (예산 삭제) - ★ 추가됨
+    // ============================
+    public int delete(String id) {
+        String sql = "DELETE FROM `budget` WHERE `id` = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, id);
+
+            return pstmt.executeUpdate(); // 삭제된 행 개수 반환
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }
