@@ -1,5 +1,6 @@
 package org.example.service;
 
+import org.example.config.AppConfig;
 import org.example.dao.CompanyDAO;
 import org.example.dao.DepartmentDAO;
 import org.example.dto.CompanyDTO;
@@ -8,22 +9,25 @@ import org.example.dto.DepartmentDTO;
 import java.util.List;
 import java.util.UUID;
 
-// 부서 비즈니스 로직 서비스
+// 부서 비즈니스 로직 서비스 (최종본)
 public class DepartmentService {
 
     private final DepartmentDAO departmentDAO = new DepartmentDAO();
     private final CompanyDAO companyDAO = new CompanyDAO();
 
-    // 부서 등록
-    public DepartmentDTO registerDepartment(String companyId, String name, String code) {
+    // =========================
+    // 1. 부서 등록
+    // =========================
+    // View/Controller에서는 회사ID 안 받음 (CP-001 고정)
+    public DepartmentDTO registerDepartment(String name, String code) {
 
-        // 회사 존재 검증
-        CompanyDTO company = companyDAO.selectById(companyId);
+        // 회사 존재 검증 (CP-001)
+        CompanyDTO company = companyDAO.selectById(AppConfig.COMPANY_ID);
         if (company == null) {
-            throw new IllegalArgumentException("존재하지 않는 회사입니다: " + companyId);
+            throw new IllegalStateException("기본 회사가 존재하지 않습니다: " + AppConfig.COMPANY_ID);
         }
 
-        // 입력 검증
+        // 입력값 검증
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("부서명은 비워둘 수 없습니다.");
         }
@@ -31,19 +35,29 @@ public class DepartmentService {
             throw new IllegalArgumentException("부서코드는 비워둘 수 없습니다.");
         }
 
+        // 코드 대문자 통일
+        String upperCode = code.toUpperCase();
+
+        // 코드 중복 체크
+        if (departmentDAO.selectByCode(upperCode) != null) {
+            throw new IllegalArgumentException("이미 존재하는 부서코드입니다: " + upperCode);
+        }
+
         // DTO 생성
         DepartmentDTO dto = new DepartmentDTO(
                 UUID.randomUUID().toString(),
-                companyId,
+                AppConfig.COMPANY_ID,
                 name,
-                code.toUpperCase()
+                upperCode
         );
 
         departmentDAO.insert(dto);
         return dto;
     }
 
-    // 부서 수정
+    // =========================
+    // 2. 부서 수정 (옵션)
+    // =========================
     public boolean updateDepartment(String deptId, String newName, String newCode) {
 
         DepartmentDTO existing = departmentDAO.selectById(deptId);
@@ -58,15 +72,29 @@ public class DepartmentService {
             throw new IllegalArgumentException("부서코드는 비워둘 수 없습니다.");
         }
 
+        String upperCode = newCode.toUpperCase();
+
+        // 코드 변경하는 경우에만 중복체크
+        DepartmentDTO byCode = departmentDAO.selectByCode(upperCode);
+        if (byCode != null && !byCode.getId().equals(deptId)) {
+            throw new IllegalArgumentException("이미 사용 중인 부서코드입니다: " + upperCode);
+        }
+
         existing.setName(newName);
-        existing.setCode(newCode.toUpperCase());
+        existing.setCode(upperCode);
 
         int rows = departmentDAO.update(existing);
         return rows > 0;
     }
 
-    // 회사의 전체 부서 목록 조회
+    // =========================
+    // 3. 회사별 부서 목록 조회
+    // =========================
     public List<DepartmentDTO> getDepartmentsByCompanyId(String companyId) {
         return departmentDAO.selectByCompanyId(companyId);
+    }
+
+    public List<DepartmentDTO> getDepartments(String companyId) {
+        return departmentDAO.selectByCompanyId(AppConfig.COMPANY_ID);
     }
 }

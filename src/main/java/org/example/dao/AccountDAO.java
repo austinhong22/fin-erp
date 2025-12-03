@@ -95,7 +95,39 @@ public class AccountDAO {
             e.printStackTrace();
         }
     }
+    public AccountDTO selectById(String id) {
+        String sql = "SELECT * FROM gl_account WHERE id = ?";
 
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, id);
+            rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                AccountDTO dto = new AccountDTO();
+                dto.setId(rs.getString("id"));
+                dto.setCompanyId(rs.getString("company_id"));
+                dto.setCode(rs.getString("code"));
+                dto.setName(rs.getString("name"));
+                dto.setType(AccountType.valueOf(rs.getString("type")));
+                return dto;
+            }
+            return null; // ID에 해당하는 계정이 없는 경우
+
+        } catch (SQLException e) {
+            // DAO는 데이터 접근 오류만 처리하고 Service에게 예외를 전달하는 것이 일반적입니다.
+            throw new IllegalStateException("selectById error", e);
+
+        } finally {
+            // 기존 close 유틸리티 메서드를 사용하여 자원 해제
+            close(conn, pstmt, rs);
+        }
+    }
 
 
 }
