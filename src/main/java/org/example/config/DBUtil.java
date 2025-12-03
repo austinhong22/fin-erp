@@ -9,7 +9,7 @@ public class DBUtil {
 
     private static final String URL = "jdbc:mysql://localhost:3306/minierp_level2?serverTimezone=UTC&characterEncoding=UTF-8";
     private static final String USER = "root";
-    private static final String PASSWORD = ""; // <-- 여기 각자 비번으로 변경!
+    private static final String PASSWORD = "test1234"; // <-- 여기 각자 비번으로 변경!
 
     static {
         try {
