@@ -5,6 +5,7 @@ public class BankAccountDTO {
     private String companyId;
     private String bankName;
     private String accountNo;
+    private String accountAlias;
     private String description;
 
     public String getId() {return id;}
@@ -24,6 +25,10 @@ public class BankAccountDTO {
     public void setAccountNo(String accountNo) {this.accountNo = accountNo;
     }
 
+    public String getAccountAlias(){return accountAlias;}
+
+    public void setAccountAlias(String accountAlias){this.accountAlias = accountAlias;}
+
     public String getDescription() {return description;}
 
     public void setDescription(String description) {this.description = description;}
@@ -36,6 +41,7 @@ public class BankAccountDTO {
                 ", companyId='" + companyId + '\'' +
                 ", bankName='" + bankName + '\'' +
                 ", accountNo='" + accountNo + '\'' +
+                ", accountAlias='" + accountAlias + '\'' +
                 ", description='" + description + '\'' +
                 '}';
     }
