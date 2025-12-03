@@ -5,6 +5,8 @@ import org.example.dto.Department;
 import org.example.service.CompanyService;
 import org.example.service.DepartmentService;
 
+import java.util.List;
+
 public class TestRunner {
 
     public static void main(String[] args) {
@@ -70,7 +72,15 @@ public class TestRunner {
         System.out.println("\n📌 네이버 부서 목록:");
         departmentService.getDepartmentsByCompanyId(c2.getId())
                 .forEach(System.out::println);
-
+        System.out.println("회사 목록");
+        List<Company> conmpaines = companyService.getAllCompanies();
+        for (Company c : conmpaines ){
+            System.out.println(c);}
+        List<Department> samsungList = departmentService.getDepartmentsByCompanyId(samsung.getId());
+        departmentService.printSimpleDepartments(samsungList);
+        for (Department d : samsungList) {
+            System.out.println(d.getCode() + " - " + d.getName());
+        }
         // ---------------------------------------------------
         System.out.println("\n===== 테스트 완료 =====");
     }

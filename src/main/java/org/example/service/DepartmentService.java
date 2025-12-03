@@ -60,6 +60,12 @@ public class DepartmentService {
     public List<Department> getDepartmentsByCompanyId(String companyId) {
         return departmentDao.findByCompanyId(companyId);
     }
+    // 부서 목록
+    public void printSimpleDepartments(List<Department> list) {
+        for (Department d : list) {
+            System.out.println(d.getCode() + " - " + d.getName());
+        }
+    }
 
     // ID로 조회
     public Department getDepartmentById(String id) {
