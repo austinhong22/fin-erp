@@ -101,6 +101,11 @@ public class FinanceController {
 
         List<ReportDTO> budgetReport = financeService.showBudgetReport(yearMonth);
 
+        if (budgetReport == null || budgetReport.isEmpty()) {
+            System.out.println("조회 결과가 없습니다.");
+            return;
+        }
+
         System.out.printf("%-10s %-12s %15s %15s %15s%n",
                 "부서", "계정", "예산", "지출", "잔액");
         System.out.println("---------------------------------------------------------------");
