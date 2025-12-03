@@ -8,7 +8,7 @@ public class DBUtil {
     // 각자의 MySQL 설정에 맞춰서 수정 후 실행 !
     private static final String URL = "jdbc:mysql://localhost:3306/minierp_level2?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8";
     private static final String USER = "root";
-    private static final String PASSWORD = "kosa"; // <-- 여기 각자 비번으로 변경!
+    private static final String PASSWORD = ""; // <-- 여기 각자 비번으로 변경!
 
     static {
         try {
