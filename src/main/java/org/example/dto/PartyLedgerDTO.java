@@ -11,6 +11,7 @@ public class PartyLedgerDTO {
     // 3. 계정과목 이름 (GLAccount 테이블 조인 결과)
     private String glAccountName;
     // 4. 금액 (JournalLine에서 가져옴)
+    private String registration;
     private BigDecimal debitAmount;
     private BigDecimal creditAmount;
 
@@ -30,6 +31,8 @@ public class PartyLedgerDTO {
         this.glAccountName = glAccountName;
     }
 
+    public void setRegistration(String registration) { this.registration = registration; }
+
     public void setDebitAmount(BigDecimal debitAmount) {
         this.debitAmount = debitAmount;
     }
@@ -45,6 +48,8 @@ public class PartyLedgerDTO {
     public String getGlAccountName() {
         return glAccountName;
     }
+
+    public String getRegistration() { return registration; }
 
     public BigDecimal getDebitAmount() {
         return debitAmount;

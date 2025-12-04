@@ -27,8 +27,8 @@ public class PartyController {
             System.out.println("\n=== 거래처 관리 (Party Management) ===");
             System.out.println("1. 거래처 등록");
             System.out.println("2. 거래처 목록 조회 (전체/검색)");
-            System.out.println("3. 거래처 원장 조회 (핵심 미션)");
-            System.out.println("4. 거래처 사용 중지 (Soft Delete)"); // ★ 메뉴 추가
+            System.out.println("3. 거래처 원장 조회 ");
+            System.out.println("4. 거래처 사용 중지 "); // ★ 메뉴 추가
             System.out.println("0. 이전 메뉴로");
             System.out.print("선택 > ");
 
@@ -43,13 +43,13 @@ public class PartyController {
                 else System.out.println("잘못 입력했습니다. 다시 입력해주세요.");
             } catch (SQLException e) {
                 // SQL 예외 처리
-                System.out.println("❌ DB 작업 중 오류가 발생했습니다: " + e.getMessage());
+                System.out.println("DB 작업 중 오류가 발생했습니다: " + e.getMessage());
             } catch (IllegalArgumentException e) {
                 // Service에서 던진 입력값 유효성 검사 예외 처리
-                System.out.println("❌ 입력 오류: " + e.getMessage());
+                System.out.println("입력 오류: " + e.getMessage());
             } catch (Exception e) {
                 // 일반 예외 처리
-                System.out.println("❌ 오류 발생: " + e.getMessage());
+                System.out.println("오류 발생: " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -142,12 +142,12 @@ public class PartyController {
         String confirm = sc.nextLine();
 
         if (!"y".equalsIgnoreCase(confirm)) {
-            System.out.println("🚫 비활성화 취소.");
+            System.out.println("비활성화 취소.");
             return;
         }
 
         service.deleteParty(id); // Service 호출 (내부적으로 softDeleteById 실행)
-        System.out.println("✅ 거래처 ID [" + id + "] 사용 중지 완료 (데이터는 보존됨).");
+        System.out.println("거래처 ID [" + id + "] 사용 중지 완료 (데이터는 보존됨).");
     }
 
     // [Helper] 거래처 목록 출력 기능
@@ -158,10 +158,10 @@ public class PartyController {
         }
         System.out.println("\n[거래처 목록 (" + title + ", 총 " + parties.size() + "건)]");
         System.out.println("------------------------------------------------------------------");
-        System.out.printf("| %-10s | %-15s | %-8s | %-12s |\n", "ID", "이름", "유형", "사업자번호");
+        System.out.printf("| %-10s | %-15s | %-8s | %-15s |\n", "ID", "이름", "유형", "사업자번호");
         System.out.println("------------------------------------------------------------------");
         for (PartyDTO party : parties) {
-            System.out.printf("| %-10s | %-15s | %-8s | %-12s |\n",
+            System.out.printf("| %-10s | %-15s | %-8s | %-15s |\n",
                     party.getId(), party.getName(), party.getType(), party.getRegistrationNumber());
         }
         System.out.println("------------------------------------------------------------------");
@@ -174,8 +174,9 @@ public class PartyController {
             return;
         }
         System.out.println("\n[거래처 원장 상세 (ID: " + partyId + ", 총 " + lines.size() + "건)]");
+        System.out.println("[거래처 사업자 등록번호 ( " + lines.get(0).getRegistration() + " )");
         System.out.println("--------------------------------------------------------------------------------------------------------");
-        System.out.printf("| %-10s | %-20s | %-10s | %10s | %10s |\n", "날짜", "계정 과목", "적요", "차변 금액", "대변 금액");
+        System.out.printf("| %-10s | %-15s | %-10s | %10s | %10s |\n", "날짜", "계정 과목", "적요", "차변 금액", "대변 금액");
         System.out.println("--------------------------------------------------------------------------------------------------------");
         //  PartyLedgerDTO 사용
         for (PartyLedgerDTO line : lines) {
