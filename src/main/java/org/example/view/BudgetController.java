@@ -13,9 +13,7 @@ public class BudgetController {
     private final BudgetService budgetService = new BudgetService();
     private final Scanner sc;
 
-    // ===============================================
     // ★ 자체 실행용 main 메서드
-    // ===============================================
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         BudgetController controller = new BudgetController(sc);
@@ -74,7 +72,7 @@ public class BudgetController {
         }
     }
 
-    // 2. 조회 (★ 요청하신 심플 버전)
+    // 2. 조회
     private void listBudget() {
         List<BudgetDTO> list = budgetService.getBudgets(AppConfig.COMPANY_ID);
 

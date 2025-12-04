@@ -17,9 +17,7 @@ public class BudgetService {
     private final DepartmentDAO departmentDAO = new DepartmentDAO();
     private final AccountDAO glAccountDAO = new AccountDAO();
 
-    // ===========================================
     // 유효성 검증 헬퍼 메서드 (★ DB 오류는 내부적으로 처리)
-    // ===========================================
     private void validateYearMonth(String ym) {
         if (ym == null || !ym.matches("\\d{6}")) throw new IllegalArgumentException("연월은 yyyyMM 형식의 숫자 6자리여야 합니다.");
         int year = Integer.parseInt(ym.substring(0, 4));
@@ -47,9 +45,7 @@ public class BudgetService {
         }
     }
 
-    // ===========================================
-    // 1. 예산 등록 (Create) - ★ Public 메서드 전체 try-catch
-    // ===========================================
+    // 1. 예산 등록 (Create)
     public BudgetDTO registerBudget(String deptId,
                                     String glAccountId,
                                     String yearMonth,
@@ -84,9 +80,7 @@ public class BudgetService {
         }
     }
 
-    // ===========================================
-    // 2. 예산 목록 조회 (Read) - ★ Public 메서드 전체 try-catch
-    // ===========================================
+    // 2. 예산 목록 조회 (Read)
     public List<BudgetDTO> getBudgets(String companyId) {
         try {
             return budgetDAO.selectByCompanyId(companyId);
@@ -95,9 +89,7 @@ public class BudgetService {
         }
     }
 
-    // ===========================================
-    // 3. 예산 금액 수정 (Update) - ★ Public 메서드 전체 try-catch
-    // ===========================================
+    // 3. 예산 금액 수정 (Update)
     public void updateBudgetAmount(String budgetId, BigDecimal newAmount) {
         if (newAmount == null || newAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("수정할 금액은 0보다 커야 합니다.");
@@ -113,9 +105,7 @@ public class BudgetService {
         }
     }
 
-    // ===========================================
-    // 4. 예산 삭제 (Delete) - ★ Public 메서드 전체 try-catch
-    // ===========================================
+    // 4. 예산 삭제 (Delete)
     public void deleteBudget(String budgetId) {
         try {
             int result = budgetDAO.delete(budgetId);
