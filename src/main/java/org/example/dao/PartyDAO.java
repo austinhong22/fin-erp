@@ -1,8 +1,6 @@
 package org.example.dao;
 
 import org.example.config.DBUtil;
-import org.example.dto.JournalEntryDTO;
-import org.example.dto.JournalLineDTO;
 import org.example.dto.PartyDTO;
 import org.example.dto.PartyLedgerDTO;
 

@@ -1,6 +1,5 @@
 package org.example.view;
 
-import org.example.dto.JournalLineDTO;
 import org.example.dto.PartyDTO;
 import org.example.dto.PartyLedgerDTO;
 import org.example.service.PartyService;
