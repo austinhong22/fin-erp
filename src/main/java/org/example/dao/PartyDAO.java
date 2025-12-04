@@ -37,7 +37,6 @@ public class PartyDAO {
     // 1. DELETE 기능  (Soft Delete 적용)
     // 실제 삭제 대신 is_active를 'N'으로 변경
     public int softDeleteById(String id) throws SQLException {
-        // DTO에 is_active 필드가 없더라도, DB에 직접 UPDATE 명령을 내릴 수 있습니다.
         String sql = "UPDATE party SET is_active = 'N' WHERE id = ?";
 
         try (Connection conn = DBUtil.getConnection();
@@ -49,7 +48,21 @@ public class PartyDAO {
     }
 
 
-    // 2. ID로 단일 거래처 조회 기능 추가 (JournalService 유효성 검사용)
+    //  2. RESTORE (복구) 기능 추가
+    public int restoreById(String id) throws SQLException {
+        // is_active를 'Y'로 변경하여 복구
+        String sql = "UPDATE party SET is_active = 'Y' WHERE id = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, id);
+            return pstmt.executeUpdate();
+        }
+    }
+
+
+    // 3. ID로 단일 거래처 조회 기능 추가 (JournalService 유효성 검사용)
     public PartyDTO selectById(String id) throws SQLException {
         // is_active='Y'인 활성 상태의 거래처만 조회
         String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party WHERE id = ? AND is_active = 'Y'";
@@ -74,9 +87,9 @@ public class PartyDAO {
         }
         return null; // ID를 찾지 못했거나 비활성화된 경우
     }
-    // 3. 기존 조회 기능 수정: is_active = 'Y' 필터
+    // 4. 기존 조회 기능 수정: is_active = 'Y' 필터
 
-    // 타입별 거래처 조회 (R)
+    // 타입별 거래처 조회 (R) - 활성
     public List<PartyDTO> selectByType(String type) throws SQLException {
         // ★ is_active = 'Y' 필터 추가
         String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party WHERE type = ? AND is_active = 'Y'";
@@ -104,7 +117,7 @@ public class PartyDAO {
         return partyList;
     }
 
-    // 거래처 전체 목록 조회
+    // 거래처 전체 목록 조회 - 활성
     public List<PartyDTO> selectAll() throws SQLException {
         // ★ is_active = 'Y' 필터 추가
         String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party WHERE is_active = 'Y'";
@@ -129,7 +142,33 @@ public class PartyDAO {
         return partyList;
     }
 
-    // 거래처 이름 키워드 검색
+    // ★ 5. 비활성 거래처 목록 조회 기능 추가
+    public List<PartyDTO> selectDeactivated() throws SQLException {
+        // is_active = 'N'인 비활성 거래처만 조회
+        String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party WHERE is_active = 'N'";
+        List<PartyDTO> partyList = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                PartyDTO dto = new PartyDTO();
+                dto.setId(rs.getString("id"));
+                dto.setCompanyId(rs.getString("company_id"));
+                dto.setName(rs.getString("name"));
+                dto.setType(rs.getString("type"));
+                dto.setContact(rs.getString("contact"));
+                dto.setRegistrationNumber(rs.getString("registration_number"));
+
+                partyList.add(dto);
+            }
+        }
+        return partyList;
+    }
+
+
+    // 거래처 이름 키워드 검색 - 활성
     public List<PartyDTO> searchPartiesByName(String nameKeyword) throws SQLException {
         // ★ is_active = 'Y' 필터 추가
         String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party WHERE name LIKE ? AND is_active = 'Y'";
@@ -160,8 +199,7 @@ public class PartyDAO {
     // 거래처 원장 상세 내역 조회 (리포트용)
     public List<PartyLedgerDTO> selectLedgerLinesByPartyId(String partyId) throws SQLException {
 
-        // 이 쿼리는 Journal Entry를 참조하므로 is_active를 추가하지 않습니다.
-        // 과거 거래 내역은 비활성화된 거래처라도 보여줘야 합니다.
+        // 과거 거래 내역은 비활성화된 거래처라도 보여줘야 하므로 is_active를 추가하지 않습니다.
         String sql = "SELECT " +
                 "  je.entry_date, " +
                 "  je.description, " +

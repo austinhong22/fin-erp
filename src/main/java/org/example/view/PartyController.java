@@ -26,10 +26,12 @@ public class PartyController {
         while (true) {
             System.out.println("\n=== 거래처 관리 (Party Management) ===");
             System.out.println("1. 거래처 등록");
-            System.out.println("2. 거래처 목록 조회 (전체/검색)");
+            System.out.println("2. 거래처 목록 조회 ");
             System.out.println("3. 거래처 원장 조회 ");
-            System.out.println("4. 거래처 사용 중지 "); // ★ 메뉴 추가
-            System.out.println("0. 이전 메뉴로");
+            System.out.println("4. 거래처 사용 중지 ");
+            System.out.println("5. 비활성 목록 조회");
+            System.out.println("6. 거래처 복구 ");
+            System.out.println("0. 종료");
             System.out.print("선택 > ");
 
             String menu = sc.nextLine();
@@ -39,7 +41,9 @@ public class PartyController {
                 if ("1".equals(menu)) register();
                 else if ("2".equals(menu)) searchMenu();
                 else if ("3".equals(menu)) viewLedger();
-                else if ("4".equals(menu)) deactivateParty(); // ★ 메서드 연결
+                else if ("4".equals(menu)) deactivateParty();
+                else if ("5".equals(menu)) listDeactivatedParties();
+                else if ("6".equals(menu)) restoreParty();
                 else System.out.println("잘못 입력했습니다. 다시 입력해주세요.");
             } catch (SQLException e) {
                 // SQL 예외 처리
@@ -96,7 +100,7 @@ public class PartyController {
 
             try {
                 if ("1".equals(choice)) {
-                    // 전체 조회
+                    // 전체 조회 (활성 상태만)
                     list = service.getAllParties();
                     title = "전체 목록 (활성 상태)";
                 } else if ("2".equals(choice)) {
@@ -132,7 +136,7 @@ public class PartyController {
         displayPartyLedger(partyId, ledgerLines);
     }
 
-    // ★ 4. 거래처 사용 중지 (Soft Delete) 메서드 구현
+    // 4. 거래처 사용 중지 (Soft Delete) 메서드 구현
     private void deactivateParty() throws SQLException {
         System.out.println("\n[거래처 사용 중지]");
         System.out.print("사용 중지할 거래처 ID: ");
@@ -150,6 +154,39 @@ public class PartyController {
         System.out.println("거래처 ID [" + id + "] 사용 중지 완료 (데이터는 보존됨).");
     }
 
+    // ★ 5. 비활성 거래처 목록 조회 (새 기능) 구현
+    private void listDeactivatedParties() throws SQLException {
+        System.out.println("\n[비활성 거래처 목록 조회]");
+
+        List<PartyDTO> list = service.getAllDeactivatedParties();
+
+        if (list.isEmpty()) {
+            System.out.println("▶ 현재 비활성 상태의 거래처가 없습니다.");
+            return;
+        }
+
+        displayPartyList(list, "비활성 목록");
+    }
+
+    // ★ 6. 거래처 복구 (Restore) 기능 구현
+    private void restoreParty() throws SQLException {
+        System.out.println("\n[거래처 복구]");
+        System.out.print("복구할 거래처 ID를 입력하세요: ");
+        String id = sc.nextLine();
+
+        System.out.print("정말로 이 거래처를 활성화(복구) 하시겠습니까? (y/n): ");
+        String confirm = sc.nextLine();
+
+        if (!"y".equalsIgnoreCase(confirm)) {
+            System.out.println("🚫 복구 취소.");
+            return;
+        }
+
+        service.restoreParty(id); // Service 호출 (내부적으로 restoreById 실행)
+        System.out.println("✅ 거래처 ID [" + id + "] 복구 완료 (다시 사용 가능).");
+    }
+
+
     // [Helper] 거래처 목록 출력 기능
     private void displayPartyList(List<PartyDTO> parties, String title) {
         if (parties == null || parties.isEmpty()) {
@@ -158,10 +195,11 @@ public class PartyController {
         }
         System.out.println("\n[거래처 목록 (" + title + ", 총 " + parties.size() + "건)]");
         System.out.println("------------------------------------------------------------------");
-        System.out.printf("| %-10s | %-15s | %-8s | %-15s |\n", "ID", "이름", "유형", "사업자번호");
+
+        System.out.printf("| %-36s | %-15s | %-8s | %-12s |\n", "ID", "이름", "유형", "사업자번호");
         System.out.println("------------------------------------------------------------------");
         for (PartyDTO party : parties) {
-            System.out.printf("| %-10s | %-15s | %-8s | %-15s |\n",
+            System.out.printf("| %-36s | %-15s | %-8s | %-12s |\n",
                     party.getId(), party.getName(), party.getType(), party.getRegistrationNumber());
         }
         System.out.println("------------------------------------------------------------------");
@@ -176,14 +214,14 @@ public class PartyController {
         System.out.println("\n[거래처 원장 상세 (ID: " + partyId + ", 총 " + lines.size() + "건)]");
         System.out.println("[거래처 사업자 등록번호 ( " + lines.get(0).getRegistration() + " )");
         System.out.println("--------------------------------------------------------------------------------------------------------");
-        System.out.printf("| %-10s | %-15s | %-10s | %10s | %10s |\n", "날짜", "계정 과목", "적요", "차변 금액", "대변 금액");
+        System.out.printf("| %-10s | %-20s | %-10s | %10s | %10s |\n", "날짜", "계정", "적요", "차변 금액", "대변 금액");
         System.out.println("--------------------------------------------------------------------------------------------------------");
         //  PartyLedgerDTO 사용
         for (PartyLedgerDTO line : lines) {
             // BigDecimal을 doubleValue()로 변환하여 printf 정렬 포맷에 맞춤
             System.out.printf("| %-10s | %-20s | %-10s | %10.0f | %10.0f |\n",
                     line.getEntryDate(),    // 날짜
-                    line.getGlAccountName(),// 계정 과목 이름
+                    line.getGlAccountName(),// 계정 이름
                     line.getDescription(),  // 적요 (JournalEntry의 Description)
                     line.getDebitAmount().doubleValue(),
                     line.getCreditAmount().doubleValue());

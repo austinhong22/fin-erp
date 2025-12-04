@@ -15,17 +15,15 @@ public class FinanceController {
 
     private FinanceService financeService = new FinanceService();
 
-    public FinanceController(Scanner sc) {
-        this.sc = sc;
-    }
+    public FinanceController(Scanner sc){ this.sc = sc;  }
 
     // 진입점 메서드
     public void start() {
         while (true) {
             System.out.println("\n=== 재무 및 기준 정보 관리 ===");
             System.out.println("1. 등록 기능 (계정/계좌)");
-            System.out.println("2. 조회 기능 (리포트)");
-            System.out.println("3. 사용 중지/삭제 (계정)"); // ★ 메뉴 추가
+            System.out.println("2. 조회 기능 (리포트/목록)"); // 메뉴명 수정
+            System.out.println("3. 계정 관리 (삭제/복구/목록)");
             System.out.println("0. 이전 메뉴로");
             System.out.print("선택 > ");
 
@@ -34,27 +32,24 @@ public class FinanceController {
 
             // Service가 throws SQLException을 던지므로, Controller에서 최종적으로 잡습니다.
             try {
-                if ("1".equals(menu)) {
-                    System.out.println("1. 계정 과목 등록하기");
+                if ("1".equals(menu)){
+                    System.out.println("1. 계정 등록하기");
                     System.out.println("2. 은행 계좌 등록하기");
-                    System.out.println("> 선택 : ");
-
+                    System.out.print("> 선택 : "); // System.out.println -> System.out.print
                     String sideMenu = sc.nextLine();
-
-                    register(sideMenu); // throws SQLException 전파
-                } else if ("2".equals(menu)) {
-                    search(); // throws SQLException 전파
-                } else if ("3".equals(menu)) { // ★ 메뉴 처리
-                    deactivateMasterData(); // throws SQLException 전파
+                    register(sideMenu);
+                }
+                else if ("2".equals(menu)) {
+                    search();
+                }
+                else if ("3".equals(menu)) {
+                    manageAccountMasterData();
                 }
             } catch (SQLException e) {
-                // DB 관련 오류 발생 시 시스템 오류로 안내
                 System.out.println("❌ DB 작업 중 오류가 발생했습니다: " + e.getMessage());
             } catch (IllegalArgumentException e) {
-                // Service에서 던진 입력값 유효성 검사 예외 처리
                 System.out.println("❌ 입력 오류: " + e.getMessage());
             } catch (Exception e) {
-                // 일반 예외 처리
                 System.out.println("❌ 일반 오류 발생: " + e.getMessage());
                 e.printStackTrace();
             }
@@ -63,11 +58,11 @@ public class FinanceController {
 
     // 1. 등록 기능 (Account, BankAccount)
     private void register(String sideMenu) throws SQLException {
-        if (sideMenu.equals("1")) {
-            System.out.println("\n[계정 과목 등록]");
-            System.out.print("계정 과목 코드를 입력해주세요: ");
+        if(sideMenu.equals("1")){
+            System.out.println("\n[계정 등록]");
+            System.out.print("계정 코드를 입력해주세요: ");
             String code = sc.nextLine();
-            System.out.print("계정 과목명을 입력해주세요: ");
+            System.out.print("계정 명을 입력해주세요: ");
             String name = sc.nextLine();
             System.out.println("등록하려는 계정 타입을 선택해주세요: ");
             System.out.println("1. ASSET(자산) / 2. REVENUE(수익) / 3. EXPENSE(비용)");
@@ -92,9 +87,8 @@ public class FinanceController {
             if (accountType == null) {
                 throw new IllegalArgumentException("계정 타입 선택이 누락되었습니다.");
             }
-
-            financeService.registerAccount(code, name, accountType);
-            System.out.println("✅ 계정 과목 등록 요청 완료.");
+            financeService.registerAccount(code,name,accountType);
+            System.out.println("✅ 계정 등록 요청 완료.");
 
         } else if (sideMenu.equals("2")) {
             System.out.println("\n[은행 계좌 등록]");
@@ -117,74 +111,114 @@ public class FinanceController {
         }
     }
 
-
-    // ★ 3. 사용 중지/삭제 기능 (계정과목) 구현
-    private void deactivateMasterData() throws SQLException {
-        System.out.println("\n[기준 정보 사용 중지 (Soft Delete)]");
-        System.out.println("1. 계정과목 사용 중지");
-        System.out.println("2. 은행 계좌 사용 중지 (TODO)"); // 아직 Service에 미구현된 BankAccount도 메뉴로 표시
-        System.out.print("선택: ");
-        String choice = sc.nextLine();
-
-        if ("1".equals(choice)) {
-            System.out.print("사용 중지할 계정 ID를 입력하세요: ");
-            String accountId = sc.nextLine();
-
-            System.out.print("정말로 이 계정과목을 비활성화(사용 중지) 하시겠습니까? (y/n): ");
-            String confirm = sc.nextLine();
-
-            if (!"y".equalsIgnoreCase(confirm)) {
-                System.out.println("🚫 작업 취소.");
-                return;
-            }
-
-            // Service 호출 (throws SQLException)
-            financeService.deleteAccount(accountId);
-            System.out.println("✅ 계정과목 ID [" + accountId + "] 사용 중지 완료.");
-
-        } else if ("2".equals(choice)) {
-            System.out.println("❌ 은행 계좌 사용 중지 기능은 현재 구현 중입니다. BankAccountDAO에 softDeleteById를 추가해야 합니다.");
-        } else {
-            throw new IllegalArgumentException("잘못된 선택입니다.");
-        }
-    }
-
     // 2. 조회 기능 분기
     private void search() throws SQLException {
-        System.out.println("--------------------------");
-        System.out.println(" 1. 계정과목 조회하기 ");
-        System.out.println(" 2. 은행계좌 조회하기 ");
-        System.out.println("--------------------------");
-        System.out.println("선택 > ");
-        String subMenu = sc.nextLine();
+        while(true) {
+            System.out.println("\n--- 재무 정보 조회 ---");
+            System.out.println("1. 계정 목록 조회 ");
+            System.out.println("2. 은행계좌 목록 조회");
+            System.out.println("3. 예산 대비 실적 리포트");
+            System.out.println("0. 이전 메뉴로");
+            System.out.print("선택 > ");
 
+            String subMenu = sc.nextLine();
 
-        try {
+            if ("0".equals(subMenu)) break;
+
             if (subMenu.equals("1")) {
                 List<AccountDTO> accountInfo = financeService.getAllActiveAccounts();
                 showAccountInfo(accountInfo);
-
             } else if (subMenu.equals("2")) {
                 List<BankAccountDTO> bankAccountInfo = financeService.selectBankAccountInfo();
                 showBankAccountInfo(bankAccountInfo);
+            } else if (subMenu.equals("3")) {
+                showBudgetReport();
+            } else {
+                throw new IllegalArgumentException("잘못된 선택입니다.");
             }
-        } catch (IllegalArgumentException e) {
-            System.out.println("다시 선택해주세요. " + e.getMessage());
         }
     }
 
+    // 3. 계정 관리 서브 메뉴 (삭제/복구/목록)
+    private void manageAccountMasterData() throws SQLException {
+        while(true) {
+            System.out.println("\n[계정 관리 (Soft Delete)]");
+            System.out.println("1. 계정 사용 중지");
+            System.out.println("2. 비활성 계정 목록 조회");
+            System.out.println("3. 계정 복구");
+            System.out.println("0. 이전 메뉴로");
+            System.out.print("선택 > ");
+            String choice = sc.nextLine();
 
+            if ("0".equals(choice)) break;
 
-    //계정 과목 정보 전체 조회
+            if ("1".equals(choice)) {
+                deactivateAccount();
+            } else if ("2".equals(choice)) {
+                listDeactivatedAccounts();
+            } else if ("3".equals(choice)) {
+                restoreAccount();
+            } else {
+                throw new IllegalArgumentException("잘못된 선택입니다.");
+            }
+        }
+    }
+
+    // [서브 기능] 계정 사용 중지
+    private void deactivateAccount() throws SQLException {
+        System.out.print("사용 중지할 계정 ID를 입력하세요: ");
+        String accountId = sc.nextLine();
+
+        System.out.print("정말로 이 계정을 비활성화(사용 중지) 하시겠습니까? (y/n): ");
+        String confirm = sc.nextLine();
+
+        if (!"y".equalsIgnoreCase(confirm)) {
+            System.out.println("🚫 작업 취소.");
+            return;
+        }
+
+        financeService.deleteAccount(accountId);
+        System.out.println("✅ 계정 ID [" + accountId + "] 사용 중지 완료.");
+    }
+
+    // [서브 기능] 계정 복구
+    private void restoreAccount() throws SQLException {
+        System.out.print("복구할 계정 ID를 입력하세요: ");
+        String accountId = sc.nextLine();
+
+        System.out.print("정말로 이 계정을 활성화(복구) 하시겠습니까? (y/n): ");
+        String confirm = sc.nextLine();
+
+        if (!"y".equalsIgnoreCase(confirm)) {
+            System.out.println("🚫 작업 취소.");
+            return;
+        }
+
+        financeService.restoreAccount(accountId);
+        System.out.println("✅ 계정 ID [" + accountId + "] 복구 완료.");
+    }
+
+    // [서브 기능] 비활성 목록 조회
+    private void listDeactivatedAccounts() throws SQLException {
+        List<AccountDTO> list = financeService.getAllDeactivatedAccounts();
+
+        if (list.isEmpty()) {
+            System.out.println("▶ 현재 비활성 상태의 계정이 없습니다.");
+            return;
+        }
+
+        System.out.println("\n--- 비활성 계정 목록 ---");
+        list.forEach(dto -> System.out.println(dto.getCode() + " | " + dto.getName() + " | ID: " + dto.getId()));
+    }
+
+    // 계정 정보 전체 조회 헬퍼
     private void showAccountInfo (List < AccountDTO > accountList) {
-
-
-        System.out.printf("%-10s %-12s %-15s %-20s %-10s%n",
-                "ID", "회사ID", "코드", "계정과목명", "구분");
-        System.out.println("----------------------------------------------------------------------");
+        System.out.printf("%-36s %-12s %-15s %-20s %-10s%n",
+                "ID", "회사ID", "코드", "계정명", "구분"); // ID 너비 수정
+        System.out.println("----------------------------------------------------------------------------------------------------------------------");
 
         for (AccountDTO a : accountList) {
-            System.out.printf("%-10s %-12s %-15s %-20s %-10s%n",
+            System.out.printf("%-36s %-12s %-15s %-20s %-10s%n",
                     a.getId(),
                     a.getCompanyId(),
                     a.getCode(),
@@ -192,24 +226,21 @@ public class FinanceController {
                     a.getType()
             );
         }
-
-
-        System.out.println("----------------------------------------------------------------------");
+        System.out.println("----------------------------------------------------------------------------------------------------------------------");
     }
 
-
-    //은행 계좌 정보 전체 조회
+    // 은행 계좌 정보 전체 조회 헬퍼
     private void showBankAccountInfo (List < BankAccountDTO > bankAccountList) {
 
-        System.out.printf("%-6s %-8s %-12s %-25s %-12s %-20s%n",
+        System.out.printf("%-36s %-12s %-12s %-25s %-12s %-20s%n", // ID 너비 수정
                 "ID", "회사ID", "은행명", "계좌번호", "별칭", "비고");
 
         // 구분선
-        System.out.println("-----------------------------------------------------------------------------------------");
+        System.out.println("----------------------------------------------------------------------------------------------------------------------");
 
         // 데이터
         for (BankAccountDTO b : bankAccountList) {
-            System.out.printf("%-6s %-8s %-12s %-25s %-12s %-20s%n",
+            System.out.printf("%-36s %-12s %-12s %-25s %-12s %-20s%n",
                     b.getId(),
                     b.getCompanyId(),
                     b.getBankName(),
@@ -218,8 +249,7 @@ public class FinanceController {
                     b.getDescription()
             );
         }
-        System.out.println("-----------------------------------------------------------------------------------------");
-
+        System.out.println("----------------------------------------------------------------------------------------------------------------------");
     }
 
     /**
