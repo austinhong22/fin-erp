@@ -39,7 +39,7 @@ public class BankAccountDAO {
 
     // SELECT ALL
     public List<BankAccountDTO> findAll() {
-        String sql = "SELECT id, company_id, bank_name, account_no, description FROM bank_account";
+        String sql = "SELECT id, company_id, bank_name, account_no, account_alias, description FROM bank_account";
 
         Connection conn = null;
         PreparedStatement pstmt = null;
@@ -58,6 +58,7 @@ public class BankAccountDAO {
                 dto.setCompanyId(rs.getString("company_id"));
                 dto.setBankName(rs.getString("bank_name"));
                 dto.setAccountNo(rs.getString("account_no"));
+                dto.setAccountAlias(rs.getString("account_alias"));
                 dto.setDescription(rs.getString("description"));
 
                 bankInfo.add(dto);

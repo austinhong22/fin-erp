@@ -45,6 +45,7 @@ public class FinanceService {
         System.out.println("은행계좌 등록 완료: " + dto);
     }
 
+
     // 3. 예산 리포트 조회
     public List<ReportDTO> showBudgetReport(String yearMonth) throws SQLException { // ★ throws SQLException 추가
         List<ReportDTO> report = reportDAO.selectBudgetReport(yearMonth);
@@ -61,11 +62,18 @@ public class FinanceService {
         }
     }
 
+
     // ===============================================
     // ★ 5. 활성 계정과목 목록 조회 기능 추가
     // ===============================================
     public List<AccountDTO> getAllActiveAccounts() throws SQLException { // ★ throws SQLException 추가
         // DAO가 이미 is_active = 'Y'로 필터링된 목록을 가져옵니다.
         return accountDAO.findAll();
+    }
+
+    public List<BankAccountDTO> selectBankAccountInfo() {
+        List<BankAccountDTO> bankAccountDTO = bankAccountDAO.findAll();
+
+        return bankAccountDTO;
     }
 }
