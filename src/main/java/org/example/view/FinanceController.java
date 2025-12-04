@@ -1,6 +1,8 @@
 package org.example.view;
 
+import org.example.dto.AccountDTO;
 import org.example.dto.AccountType;
+import org.example.dto.BankAccountDTO;
 import org.example.dto.ReportDTO;
 import org.example.service.FinanceService;
 
@@ -13,7 +15,9 @@ public class FinanceController {
 
     private FinanceService financeService = new FinanceService();
 
-    public FinanceController(Scanner sc){ this.sc = sc;  }
+    public FinanceController(Scanner sc) {
+        this.sc = sc;
+    }
 
     // 진입점 메서드
     public void start() {
@@ -30,18 +34,17 @@ public class FinanceController {
 
             // Service가 throws SQLException을 던지므로, Controller에서 최종적으로 잡습니다.
             try {
-                if ("1".equals(menu)){
-                    System.out.println("1. 계정과목 등록하기");
+                if ("1".equals(menu)) {
+                    System.out.println("1. 계정 과목 등록하기");
                     System.out.println("2. 은행 계좌 등록하기");
+                    System.out.println("> 선택 : ");
 
                     String sideMenu = sc.nextLine();
 
                     register(sideMenu); // throws SQLException 전파
-                }
-                else if ("2".equals(menu)) {
+                } else if ("2".equals(menu)) {
                     search(); // throws SQLException 전파
-                }
-                else if ("3".equals(menu)) { // ★ 메뉴 처리
+                } else if ("3".equals(menu)) { // ★ 메뉴 처리
                     deactivateMasterData(); // throws SQLException 전파
                 }
             } catch (SQLException e) {
@@ -60,7 +63,7 @@ public class FinanceController {
 
     // 1. 등록 기능 (Account, BankAccount)
     private void register(String sideMenu) throws SQLException {
-        if(sideMenu.equals("1")){
+        if (sideMenu.equals("1")) {
             System.out.println("\n[계정 과목 등록]");
             System.out.print("계정 과목 코드를 입력해주세요: ");
             String code = sc.nextLine();
@@ -72,10 +75,16 @@ public class FinanceController {
             AccountType accountType = null;
             String type = sc.nextLine();
 
-            switch (type){
-                case "1" : accountType = AccountType.ASSET; break;
-                case "2" : accountType = AccountType.REVENUE; break;
-                case "3" : accountType = AccountType.EXPENSE; break;
+            switch (type) {
+                case "1":
+                    accountType = AccountType.ASSET;
+                    break;
+                case "2":
+                    accountType = AccountType.REVENUE;
+                    break;
+                case "3":
+                    accountType = AccountType.EXPENSE;
+                    break;
                 default:
                     throw new IllegalArgumentException("잘못된 계정 타입 선택 (1, 2, 3 중 하나를 선택해야 합니다).");
             }
@@ -84,11 +93,10 @@ public class FinanceController {
                 throw new IllegalArgumentException("계정 타입 선택이 누락되었습니다.");
             }
 
-            financeService.registerAccount(code,name,accountType);
+            financeService.registerAccount(code, name, accountType);
             System.out.println("✅ 계정 과목 등록 요청 완료.");
 
-        }
-        else if(sideMenu.equals("2")){
+        } else if (sideMenu.equals("2")) {
             System.out.println("\n[은행 계좌 등록]");
             System.out.print("은행명을 입력해주세요: ");
             String bankName = sc.nextLine();
@@ -102,12 +110,13 @@ public class FinanceController {
             System.out.print("기타 추가할 내용 입력: ");
             String description = sc.nextLine();
 
-            financeService.registerBankAccount(bankName,accountNo, accountAlias, description);
+            financeService.registerBankAccount(bankName, accountNo, accountAlias, description);
             System.out.println("✅ 은행 계좌 등록 요청 완료.");
         } else {
             throw new IllegalArgumentException("잘못된 서브 메뉴 선택입니다.");
         }
     }
+
 
     // ★ 3. 사용 중지/삭제 기능 (계정과목) 구현
     private void deactivateMasterData() throws SQLException {
@@ -142,13 +151,81 @@ public class FinanceController {
 
     // 2. 조회 기능 분기
     private void search() throws SQLException {
-        showBudgetReport();
+        System.out.println("--------------------------");
+        System.out.println(" 1. 계정과목 조회하기 ");
+        System.out.println(" 2. 은행계좌 조회하기 ");
+        System.out.println("--------------------------");
+        System.out.println("선택 > ");
+        String subMenu = sc.nextLine();
+
+
+        try {
+            if (subMenu.equals("1")) {
+                List<AccountDTO> accountInfo = financeService.getAllActiveAccounts();
+                showAccountInfo(accountInfo);
+
+            } else if (subMenu.equals("2")) {
+                List<BankAccountDTO> bankAccountInfo = financeService.selectBankAccountInfo();
+                showBankAccountInfo(bankAccountInfo);
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("다시 선택해주세요. " + e.getMessage());
+        }
+    }
+
+
+
+    //계정 과목 정보 전체 조회
+    private void showAccountInfo (List < AccountDTO > accountList) {
+
+
+        System.out.printf("%-10s %-12s %-15s %-20s %-10s%n",
+                "ID", "회사ID", "코드", "계정과목명", "구분");
+        System.out.println("----------------------------------------------------------------------");
+
+        for (AccountDTO a : accountList) {
+            System.out.printf("%-10s %-12s %-15s %-20s %-10s%n",
+                    a.getId(),
+                    a.getCompanyId(),
+                    a.getCode(),
+                    a.getName(),
+                    a.getType()
+            );
+        }
+
+
+        System.out.println("----------------------------------------------------------------------");
+    }
+
+
+    //은행 계좌 정보 전체 조회
+    private void showBankAccountInfo (List < BankAccountDTO > bankAccountList) {
+
+        System.out.printf("%-6s %-8s %-12s %-25s %-12s %-20s%n",
+                "ID", "회사ID", "은행명", "계좌번호", "별칭", "비고");
+
+        // 구분선
+        System.out.println("-----------------------------------------------------------------------------------------");
+
+        // 데이터
+        for (BankAccountDTO b : bankAccountList) {
+            System.out.printf("%-6s %-8s %-12s %-25s %-12s %-20s%n",
+                    b.getId(),
+                    b.getCompanyId(),
+                    b.getBankName(),
+                    b.getAccountNo(),
+                    b.getAccountAlias(),
+                    b.getDescription()
+            );
+        }
+        System.out.println("-----------------------------------------------------------------------------------------");
+
     }
 
     /**
      * 예산 대비 실적 리포트 조회
      */
-    public void showBudgetReport() throws SQLException {
+    public void showBudgetReport () throws SQLException {
         System.out.print("\n조회하려는 연월을 입력해주세요 : (예: 202501) ");
         String yearMonth = sc.nextLine();
 
