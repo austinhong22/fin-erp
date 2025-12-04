@@ -87,14 +87,51 @@ public class DepartmentController {
                 return;
             }
 
-            list.forEach(System.out::println);
+            // 표 헤더 출력 (너비 조정: ID는 36칸, 이름 15칸, 코드 10칸)
+            System.out.println("------------------------------------------------------------------");
+            System.out.printf("| %-36s | %-15s | %-10s |\n", "부서 ID", "부서명", "부서코드");
+            System.out.println("------------------------------------------------------------------");
+
+            // 데이터 출력
+            for (DepartmentDTO dto : list) {
+                System.out.printf("| %-36s | %-15s | %-10s |\n",
+                        dto.getId(),      // ID (UUID 등)
+                        dto.getName(),    // 부서명
+                        dto.getCode()     // 부서코드
+                );
+            }
+            System.out.println("------------------------------------------------------------------");
+
         } catch (IllegalArgumentException e) {
             System.out.println("❌ 조회 실패: " + e.getMessage());
         }
     }
 
     private void updateDepartment() throws SQLException {
-        System.out.println("❌ 수정 기능 구현 필요.");
+        try {
+            System.out.println("\n[부서 정보 수정]");
+            System.out.print("수정할 부서 ID를 입력하세요: ");
+            String id = sc.nextLine();
+
+            System.out.print("새로운 부서명: ");
+            String newName = sc.nextLine();
+
+            System.out.print("새로운 부서 코드: ");
+            String newCode = sc.nextLine();
+
+            // Service 호출 (유효성 검사 및 중복 체크 후 업데이트)
+            boolean result = departmentService.updateDepartment(id, newName, newCode);
+
+            if (result) {
+                System.out.println("✅ 부서 수정 완료!");
+            } else {
+                System.out.println("❌ 수정 실패: 변경된 내용이 없거나 ID를 찾을 수 없습니다.");
+            }
+
+        } catch (IllegalArgumentException e) {
+            // ID 없음, 이름/코드 공백, 코드 중복 등의 비즈니스 오류 처리
+            System.out.println("❌ 수정 실패: " + e.getMessage());
+        }
     }
 
     private void listDeactivatedDepartments() throws SQLException {
@@ -108,8 +145,19 @@ public class DepartmentController {
                 return;
             }
 
-            System.out.println("--- 비활성 상태 부서 목록 ---");
-            list.forEach(System.out::println);
+            System.out.println("------------------------------------------------------------------");
+            System.out.printf("| %-36s | %-15s | %-10s |\n", "부서 ID", "부서명", "부서코드");
+            System.out.println("------------------------------------------------------------------");
+
+            for (DepartmentDTO dto : list) {
+                System.out.printf("| %-36s | %-15s | %-10s |\n",
+                        dto.getId(),
+                        dto.getName(),
+                        dto.getCode()
+                );
+            }
+            System.out.println("------------------------------------------------------------------");
+
         } catch (IllegalArgumentException e) {
             System.out.println("❌ 조회 실패: " + e.getMessage());
         }
