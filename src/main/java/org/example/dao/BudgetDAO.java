@@ -10,10 +10,8 @@ import java.util.List;
 
 public class BudgetDAO {
 
-    // ============================
-    // 1. INSERT (SQLException 던짐)
-    // ============================
-    public int insert(BudgetDTO dto) throws SQLException { // ★ throws SQLException 추가
+    // 1. INSERT
+    public int insert(BudgetDTO dto) throws SQLException {
         String sql = "INSERT INTO `budget` (`id`, `company_id`, `department_id`, `gl_account_id`, `year_month`, `budget_amount`) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBUtil.getConnection();
@@ -31,10 +29,8 @@ public class BudgetDAO {
         // catch 블록을 제거하여 SQLException을 Service로 던집니다.
     }
 
-    // ============================
     // 2. 중복 체크 (exists)
-    // ============================
-    public boolean exists(String departmentId, String glAccountId, String yearMonth) throws SQLException { // ★ throws SQLException 추가
+    public boolean exists(String departmentId, String glAccountId, String yearMonth) throws SQLException {
         String sql = "SELECT COUNT(*) FROM `budget` WHERE `department_id` = ? AND `gl_account_id` = ? AND `year_month` = ?";
 
         try (Connection conn = DBUtil.getConnection();
@@ -54,10 +50,8 @@ public class BudgetDAO {
         // catch 블록을 제거하여 SQLException을 Service로 던집니다.
     }
 
-    // ============================
     // 3. 회사 ID 기준 예산 전체 조회
-    // ============================
-    public List<BudgetDTO> selectByCompanyId(String companyId) throws SQLException { // ★ throws SQLException 추가
+    public List<BudgetDTO> selectByCompanyId(String companyId) throws SQLException {
         List<BudgetDTO> list = new ArrayList<>();
         String sql = "SELECT `id`, `company_id`, `department_id`, `gl_account_id`, `year_month`, `budget_amount` FROM `budget` WHERE `company_id` = ? ORDER BY `year_month` DESC";
 
@@ -82,9 +76,7 @@ public class BudgetDAO {
         return list;
     }
 
-    // ============================
     // 4. UPDATE (예산 금액 수정)
-    // ============================
     public int updateAmount(String id, BigDecimal newAmount) throws SQLException { // ★ throws SQLException 추가
         String sql = "UPDATE `budget` SET `budget_amount` = ? WHERE `id` = ?";
 
@@ -98,10 +90,8 @@ public class BudgetDAO {
         }
     }
 
-    // ============================
     // 5. DELETE (예산 삭제)
-    // ============================
-    public int delete(String id) throws SQLException { // ★ throws SQLException 추가
+    public int delete(String id) throws SQLException {
         String sql = "DELETE FROM `budget` WHERE `id` = ?";
 
         try (Connection conn = DBUtil.getConnection();
