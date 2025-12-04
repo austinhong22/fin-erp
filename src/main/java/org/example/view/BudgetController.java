@@ -74,6 +74,8 @@ public class BudgetController {
 
     // 2. 조회
     private void listBudget() {
+        System.out.println("\n[예산 목록 조회]");
+
         List<BudgetDTO> list = budgetService.getBudgets(AppConfig.COMPANY_ID);
 
         if (list.isEmpty()) {
@@ -81,8 +83,26 @@ public class BudgetController {
             return;
         }
 
-        // DTO에 toString()이 잘 정의되어 있으므로 그대로 출력합니다.
-        list.forEach(System.out::println);
+        // 표 헤더 출력
+        System.out.println("--------------------------------------------------------------------------------");
+        System.out.printf("| %-12s | %-10s | %-10s | %-8s | %-15s |\n",
+                "예산 ID", "부서 ID", "계정 ID", "연월", "금액");
+        System.out.println("--------------------------------------------------------------------------------");
+
+        // 데이터 출력
+        for (BudgetDTO dto : list) {
+            // ID가 너무 길어서(36자) 앞 8자리만 잘라서 보여줍니다. (가독성)
+            String shortId = dto.getId().length() > 8 ? dto.getId().substring(0, 8) + "..." : dto.getId();
+
+            System.out.printf("| %-12s | %-10s | %-10s | %-8s | %-15s |\n",
+                    shortId,
+                    dto.getDepartmentId(),
+                    dto.getGlAccountId(),
+                    dto.getYearMonth(),
+                    dto.getBudgetAmount().toPlainString() // BigDecimal -> String 변환
+            );
+        }
+        System.out.println("--------------------------------------------------------------------------------");
     }
 
     // 3. 수정
