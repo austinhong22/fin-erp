@@ -10,7 +10,7 @@ import java.util.Scanner;
 public class FinanceController {
     private Scanner sc;
 
-    private FinanceService financeService;
+    private FinanceService financeService = new FinanceService();
 
     public FinanceController(Scanner sc){ this.sc = sc;  }
 
@@ -90,6 +90,13 @@ public class FinanceController {
     }
 
     private void search() {
+        showBudgetReport();
+    }
+
+    /**
+     * 예산 대비 실적 리포트 조회 (public 메서드로 Main에서 직접 호출 가능)
+     */
+    public void showBudgetReport() {
         System.out.println("조회하려는 연월을 입력해주세요 : (예: 202501) ");
         String yearMonth = sc.nextLine();
 
