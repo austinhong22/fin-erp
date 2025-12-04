@@ -14,7 +14,7 @@ public class PartyService {
     private final PartyDAO dao = new PartyDAO();
     private static final String DEFAULT_COMPANY_ID = "CP-001"; // 고정된 회사 ID
 
-    // 💡 1. 거래처 등록 로직 (C)
+    // 1. 거래처 등록 로직 (C)
     public void registerParty(String name, String type, String contact, String regNo) throws SQLException { // ★ throws SQLException 추가
 
         PartyDTO dto = new PartyDTO();
@@ -44,7 +44,7 @@ public class PartyService {
         }
     }
 
-    // 💡 2. 타입별 거래처 조회 로직 (R)
+    // 2. 타입별 거래처 조회 로직 (R)
     public List<PartyDTO> getPartiesByType(String type) throws SQLException { // ★ throws SQLException 추가
 
         // 1. 비즈니스 로직: 조회 타입도 대문자로 변환하여 DAO에 전달
@@ -66,7 +66,7 @@ public class PartyService {
         return dao.searchPartiesByName(keyword);
     }
 
-    // 💡 3. 거래처 삭제 로직 (Soft Delete 구현)
+    // 3. 거래처 삭제 로직 (Soft Delete 구현)
     public void deleteParty(String partyId) throws SQLException { // ★ Soft Delete 메서드 추가
         if (partyId == null || partyId.trim().isEmpty()) {
             throw new IllegalArgumentException("거래처 ID는 필수입니다.");
@@ -80,7 +80,7 @@ public class PartyService {
         }
     }
 
-    // 💡 4. 거래처 원장 상세 내역 조회 (핵심 미션 구현)
+    // 4. 거래처 원장 상세 내역 조회 (핵심 미션 구현)
     public List<PartyLedgerDTO> getLedgerLinesByPartyId(String partyId) throws SQLException { // ★ throws SQLException 추가
         if (partyId == null || partyId.trim().isEmpty()) {
             throw new IllegalArgumentException("거래처 ID는 필수입니다.");

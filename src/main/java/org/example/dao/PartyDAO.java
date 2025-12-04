@@ -167,12 +167,14 @@ public class PartyDAO {
                 "  je.description, " +
                 "  gl.name AS gl_account_name, " +
                 "  jl.debit_amount, " +
-                "  jl.credit_amount " +
+                "  jl.credit_amount, " +
+                "  registration_number " +
                 "FROM journal_entry je " +
                 "JOIN journal_line jl ON je.id = jl.journal_entry_id " +
                 "JOIN gl_account gl ON jl.gl_account_id = gl.id " +
+                "JOIN party p ON je.party_id = p.id " +
                 "WHERE je.party_id = ? " +
-                "ORDER BY je.entry_date DESC";
+                "ORDER BY je.entry_date";
 
         List<PartyLedgerDTO> ledgerList = new ArrayList<>();
 
@@ -187,6 +189,7 @@ public class PartyDAO {
                     dto.setEntryDate(rs.getString("entry_date"));
                     dto.setDescription(rs.getString("description"));
                     dto.setGlAccountName(rs.getString("gl_account_name"));
+                    dto.setRegistration(rs.getString("registration_number"));
                     dto.setDebitAmount(rs.getBigDecimal("debit_amount"));
                     dto.setCreditAmount(rs.getBigDecimal("credit_amount"));
 
