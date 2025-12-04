@@ -12,7 +12,7 @@ import java.util.List;
 public class CompanyDAO {
 
     // INSERT
-    public int insert(CompanyDTO dto) {
+    public int insert(CompanyDTO dto) throws SQLException { // ★ throws SQLException 추가
         String sql = "INSERT INTO company (id, name, business_no, created_at) VALUES (?, ?, ?, NOW())";
 
         try (Connection conn = DBUtil.getConnection();
@@ -23,15 +23,12 @@ public class CompanyDAO {
             pstmt.setString(3, dto.getBusinessNo());
 
             return pstmt.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
         }
+        // catch 블록 제거: Service가 오류를 처리하도록 위임
     }
 
     // UPDATE (회사명, 사업자번호 수정)
-    public int update(CompanyDTO dto) {
+    public int update(CompanyDTO dto) throws SQLException { // ★ throws SQLException 추가
         String sql = "UPDATE company SET name = ?, business_no = ? WHERE id = ?";
 
         try (Connection conn = DBUtil.getConnection();
@@ -42,15 +39,12 @@ public class CompanyDAO {
             pstmt.setString(3, dto.getId());
 
             return pstmt.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
         }
+        // catch 블록 제거
     }
 
     // 전체 조회
-    public List<CompanyDTO> selectAll() {
+    public List<CompanyDTO> selectAll() throws SQLException { // ★ throws SQLException 추가
         List<CompanyDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM company";
 
@@ -69,16 +63,13 @@ public class CompanyDAO {
                         createdAt
                 ));
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-
         return list;
+        // catch 블록 제거
     }
 
-    // ID로 조회 (순서 수정된 버전)
-    public CompanyDTO selectById(String id) {
+    // ID로 조회
+    public CompanyDTO selectById(String id) throws SQLException { // ★ throws SQLException 추가
         String sql = "SELECT * FROM company WHERE id = ?";
 
         try (Connection conn = DBUtil.getConnection();
@@ -98,10 +89,8 @@ public class CompanyDAO {
                         createdAt
                 );
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
+        // catch 블록 제거
     }
 }

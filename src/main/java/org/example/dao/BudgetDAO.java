@@ -11,9 +11,9 @@ import java.util.List;
 public class BudgetDAO {
 
     // ============================
-    // 1. INSERT (예산 등록)
+    // 1. INSERT (SQLException 던짐)
     // ============================
-    public int insert(BudgetDTO dto) {
+    public int insert(BudgetDTO dto) throws SQLException { // ★ throws SQLException 추가
         String sql = "INSERT INTO `budget` (`id`, `company_id`, `department_id`, `gl_account_id`, `year_month`, `budget_amount`) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBUtil.getConnection();
@@ -27,16 +27,14 @@ public class BudgetDAO {
             pstmt.setBigDecimal(6, dto.getBudgetAmount());
 
             return pstmt.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
         }
+        // catch 블록을 제거하여 SQLException을 Service로 던집니다.
     }
 
     // ============================
     // 2. 중복 체크 (exists)
     // ============================
-    public boolean exists(String departmentId, String glAccountId, String yearMonth) {
+    public boolean exists(String departmentId, String glAccountId, String yearMonth) throws SQLException { // ★ throws SQLException 추가
         String sql = "SELECT COUNT(*) FROM `budget` WHERE `department_id` = ? AND `gl_account_id` = ? AND `year_month` = ?";
 
         try (Connection conn = DBUtil.getConnection();
@@ -51,17 +49,15 @@ public class BudgetDAO {
                     return rs.getInt(1) > 0; // 1개 이상이면 true (중복)
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return true; // 에러 시 안전하게 중복으로 간주
         }
         return false;
+        // catch 블록을 제거하여 SQLException을 Service로 던집니다.
     }
 
     // ============================
     // 3. 회사 ID 기준 예산 전체 조회
     // ============================
-    public List<BudgetDTO> selectByCompanyId(String companyId) {
+    public List<BudgetDTO> selectByCompanyId(String companyId) throws SQLException { // ★ throws SQLException 추가
         List<BudgetDTO> list = new ArrayList<>();
         String sql = "SELECT `id`, `company_id`, `department_id`, `gl_account_id`, `year_month`, `budget_amount` FROM `budget` WHERE `company_id` = ? ORDER BY `year_month` DESC";
 
@@ -82,16 +78,14 @@ public class BudgetDAO {
                 );
                 list.add(dto);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return list;
     }
 
     // ============================
-    // 4. UPDATE (예산 금액 수정) - ★ 추가됨
+    // 4. UPDATE (예산 금액 수정)
     // ============================
-    public int updateAmount(String id, BigDecimal newAmount) {
+    public int updateAmount(String id, BigDecimal newAmount) throws SQLException { // ★ throws SQLException 추가
         String sql = "UPDATE `budget` SET `budget_amount` = ? WHERE `id` = ?";
 
         try (Connection conn = DBUtil.getConnection();
@@ -101,16 +95,13 @@ public class BudgetDAO {
             pstmt.setString(2, id);
 
             return pstmt.executeUpdate(); // 수정된 행 개수 반환
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
         }
     }
 
     // ============================
-    // 5. DELETE (예산 삭제) - ★ 추가됨
+    // 5. DELETE (예산 삭제)
     // ============================
-    public int delete(String id) {
+    public int delete(String id) throws SQLException { // ★ throws SQLException 추가
         String sql = "DELETE FROM `budget` WHERE `id` = ?";
 
         try (Connection conn = DBUtil.getConnection();
@@ -119,9 +110,6 @@ public class BudgetDAO {
             pstmt.setString(1, id);
 
             return pstmt.executeUpdate(); // 삭제된 행 개수 반환
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
         }
     }
 }

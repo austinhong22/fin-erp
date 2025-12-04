@@ -7,12 +7,15 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-// 부서 테이블 DAO (최종본)
+// 부서 테이블 DAO (PartyDAO와 구조 통일)
 public class DepartmentDAO {
 
-    // INSERT
-    public int insert(DepartmentDTO dto) {
-        String sql = "INSERT INTO department (id, company_id, name, code) VALUES (?, ?, ?, ?)";
+    // ====================================================
+    // INSERT (Soft Delete 적용: is_active = 'Y' 기본값)
+    // ====================================================
+    public int insert(DepartmentDTO dto) throws SQLException {
+
+        String sql = "INSERT INTO department (id, company_id, name, code, is_active) VALUES (?, ?, ?, ?, 'Y')";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -23,16 +26,15 @@ public class DepartmentDAO {
             pstmt.setString(4, dto.getCode());
 
             return pstmt.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
         }
     }
 
+    // ====================================================
     // UPDATE (name, code 수정)
-    public int update(DepartmentDTO dto) {
-        String sql = "UPDATE department SET name = ?, code = ? WHERE id = ?";
+    // ====================================================
+    public int update(DepartmentDTO dto) throws SQLException {
+
+        String sql = "UPDATE department SET name = ?, code = ? WHERE id = ? AND is_active = 'Y'";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -42,112 +44,132 @@ public class DepartmentDAO {
             pstmt.setString(3, dto.getId());
 
             return pstmt.executeUpdate();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
         }
     }
 
-    // ============================
-    // ID로 조회
-    // ============================
-    public DepartmentDTO selectById(String id) {
-        String sql = "SELECT * FROM department WHERE id = ?";
+    // ====================================================
+    // SOFT DELETE (is_active = 'N')
+    // ====================================================
+    public int softDeleteById(String id) throws SQLException {
+
+        String sql = "UPDATE department SET is_active = 'N' WHERE id = ?";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, id);
-            ResultSet rs = pstmt.executeQuery();
+            return pstmt.executeUpdate();
+        }
+    }
 
-            if (rs.next()) {
-                return new DepartmentDTO(
-                        rs.getString("id"),
-                        rs.getString("company_id"),
-                        rs.getString("name"),
-                        rs.getString("code")
-                );
+    // ====================================================
+    // SELECT BY ID (활성 부서만)
+    // ====================================================
+    public DepartmentDTO selectById(String id) throws SQLException {
+
+        String sql = "SELECT id, company_id, name, code " +
+                "FROM department WHERE id = ? AND is_active = 'Y'";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, id);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new DepartmentDTO(
+                            rs.getString("id"),
+                            rs.getString("company_id"),
+                            rs.getString("name"),
+                            rs.getString("code")
+                    );
+                }
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
 
-    // ============================
-    // 회사 ID로 부서 목록 조회
-    // ============================
-    public List<DepartmentDTO> selectByCompanyId(String companyId) {
+    // ====================================================
+    // SELECT BY COMPANY ID (활성 부서 목록)
+    // ====================================================
+    public List<DepartmentDTO> selectByCompanyId(String companyId) throws SQLException {
+
+        String sql = "SELECT id, company_id, name, code " +
+                "FROM department WHERE company_id = ? AND is_active = 'Y' ORDER BY name";
+
         List<DepartmentDTO> list = new ArrayList<>();
-        String sql = "SELECT * FROM department WHERE company_id = ? ORDER BY name";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, companyId);
-            ResultSet rs = pstmt.executeQuery();
 
-            while (rs.next()) {
-                list.add(new DepartmentDTO(
-                        rs.getString("id"),
-                        rs.getString("company_id"),
-                        rs.getString("name"),
-                        rs.getString("code")
-                ));
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new DepartmentDTO(
+                            rs.getString("id"),
+                            rs.getString("company_id"),
+                            rs.getString("name"),
+                            rs.getString("code")
+                    ));
+                }
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return list;
     }
-    // 부서 코드 중복 체크
-    public DepartmentDTO selectByCode(String code) {
-        String sql = "SELECT * FROM department WHERE code = ?";
+
+    // ====================================================
+    // 중복 체크: CODE
+    // ====================================================
+    public DepartmentDTO selectByCode(String code) throws SQLException {
+
+        String sql = "SELECT id, company_id, name, code " +
+                "FROM department WHERE code = ? AND is_active = 'Y'";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, code);
-            ResultSet rs = pstmt.executeQuery();
 
-            if (rs.next()) {
-                return new DepartmentDTO(
-                        rs.getString("id"),
-                        rs.getString("company_id"),
-                        rs.getString("name"),
-                        rs.getString("code")
-                );
+            try (ResultSet rs = pstmt.executeQuery()) {
+
+                if (rs.next()) {
+                    return new DepartmentDTO(
+                            rs.getString("id"),
+                            rs.getString("company_id"),
+                            rs.getString("name"),
+                            rs.getString("code")
+                    );
+                }
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
-    // 부서명 중복 체크 (선택)=
-    public DepartmentDTO selectByName(String name) {
-        String sql = "SELECT * FROM department WHERE name = ?";
+
+    // ====================================================
+    // 중복 체크: NAME
+    // ====================================================
+    public DepartmentDTO selectByName(String name) throws SQLException {
+
+        String sql = "SELECT id, company_id, name, code " +
+                "FROM department WHERE name = ? AND is_active = 'Y'";
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, name);
-            ResultSet rs = pstmt.executeQuery();
 
-            if (rs.next()) {
-                return new DepartmentDTO(
-                        rs.getString("id"),
-                        rs.getString("company_id"),
-                        rs.getString("name"),
-                        rs.getString("code")
-                );
+            try (ResultSet rs = pstmt.executeQuery()) {
+
+                if (rs.next()) {
+                    return new DepartmentDTO(
+                            rs.getString("id"),
+                            rs.getString("company_id"),
+                            rs.getString("name"),
+                            rs.getString("code")
+                    );
+                }
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }

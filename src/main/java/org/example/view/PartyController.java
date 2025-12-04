@@ -9,7 +9,6 @@ import org.example.service.PartyService;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
-// import org.example.service.본인서비스;
 
 public class PartyController {
 
@@ -29,6 +28,7 @@ public class PartyController {
             System.out.println("1. 거래처 등록");
             System.out.println("2. 거래처 목록 조회 (전체/검색)");
             System.out.println("3. 거래처 원장 조회 (핵심 미션)");
+            System.out.println("4. 거래처 사용 중지 (Soft Delete)"); // ★ 메뉴 추가
             System.out.println("0. 이전 메뉴로");
             System.out.print("선택 > ");
 
@@ -39,6 +39,7 @@ public class PartyController {
                 if ("1".equals(menu)) register();
                 else if ("2".equals(menu)) searchMenu();
                 else if ("3".equals(menu)) viewLedger();
+                else if ("4".equals(menu)) deactivateParty(); // ★ 메서드 연결
                 else System.out.println("잘못 입력했습니다. 다시 입력해주세요.");
             } catch (SQLException e) {
                 // SQL 예외 처리
@@ -97,7 +98,7 @@ public class PartyController {
                 if ("1".equals(choice)) {
                     // 전체 조회
                     list = service.getAllParties();
-                    title = "전체 목록";
+                    title = "전체 목록 (활성 상태)";
                 } else if ("2".equals(choice)) {
                     // 이름 검색
                     System.out.print("검색할 거래처 이름 (키워드): ");
@@ -106,7 +107,7 @@ public class PartyController {
                     title = "'" + keyword + "' 검색 결과";
                 } else {
                     System.out.println("잘못 입력했습니다. 다시 입력해주세요.");
-                    continue; // 잘못 입력 시 다시 상세 메뉴로
+                    continue;
                 }
 
                 displayPartyList(list, title); // 출력 헬퍼 메서드 호출
@@ -131,6 +132,24 @@ public class PartyController {
         displayPartyLedger(partyId, ledgerLines);
     }
 
+    // ★ 4. 거래처 사용 중지 (Soft Delete) 메서드 구현
+    private void deactivateParty() throws SQLException {
+        System.out.println("\n[거래처 사용 중지]");
+        System.out.print("사용 중지할 거래처 ID: ");
+        String id = sc.nextLine();
+
+        System.out.print("정말로 이 거래처를 비활성화(사용 중지) 하시겠습니까? (y/n): ");
+        String confirm = sc.nextLine();
+
+        if (!"y".equalsIgnoreCase(confirm)) {
+            System.out.println("🚫 비활성화 취소.");
+            return;
+        }
+
+        service.deleteParty(id); // Service 호출 (내부적으로 softDeleteById 실행)
+        System.out.println("✅ 거래처 ID [" + id + "] 사용 중지 완료 (데이터는 보존됨).");
+    }
+
     // [Helper] 거래처 목록 출력 기능
     private void displayPartyList(List<PartyDTO> parties, String title) {
         if (parties == null || parties.isEmpty()) {
@@ -149,7 +168,6 @@ public class PartyController {
     }
 
     //  [Helper] 거래처 원장 상세 내역 출력 기능 (I/O)
-    //  시그니처를 List<PartyLedgerDTO>로 변경
     private void displayPartyLedger(String partyId, List<PartyLedgerDTO> lines) {
         if (lines.isEmpty()) {
             System.out.println("▶ 해당 거래처(ID: " + partyId + ")의 거래 내역이 없습니다.");
@@ -161,6 +179,7 @@ public class PartyController {
         System.out.println("--------------------------------------------------------------------------------------------------------");
         //  PartyLedgerDTO 사용
         for (PartyLedgerDTO line : lines) {
+            // BigDecimal을 doubleValue()로 변환하여 printf 정렬 포맷에 맞춤
             System.out.printf("| %-10s | %-20s | %-10s | %10.0f | %10.0f |\n",
                     line.getEntryDate(),    // 날짜
                     line.getGlAccountName(),// 계정 과목 이름

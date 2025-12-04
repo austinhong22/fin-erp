@@ -4,10 +4,11 @@ import org.example.config.DBUtil;
 import org.example.view.*;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
 
         // ==========================================
         // 🔍 [DB 연결 테스트 구역] 시작
@@ -102,7 +103,7 @@ public class Main {
     /**
      * 리포트 메뉴
      */
-    private static void showReportMenu(Scanner sc, FinanceController financeCtrl) {
+    private static void showReportMenu(Scanner sc, FinanceController financeCtrl) throws SQLException {
         while (true) {
             System.out.println("\n=== 리포트 ===");
             System.out.println("1. 예산 대비 실적 리포트");

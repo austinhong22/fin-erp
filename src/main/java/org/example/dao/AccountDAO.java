@@ -2,58 +2,58 @@ package org.example.dao;
 
 import org.example.config.DBUtil;
 import org.example.dto.AccountDTO;
-import org.example.dto.AccountType;
+import org.example.dto.AccountType; // 계정과목의 ENUM 타입
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccountDAO {
 
+    // 1. INSERT (is_active='Y' 명시적 추가)
+    public int insert(AccountDTO dto) throws SQLException {
+        // ★ is_active 컬럼을 명시적으로 'Y'로 추가합니다.
+        String sql = "INSERT INTO gl_account (id, company_id, code, name, type, is_active) VALUES (?, ?, ?, ?, ?, 'Y')";
 
-    public int insert(AccountDTO dto) {
-        String sql = "INSERT INTO gl_account (id, company_id, code, name, type) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-
-
-        try {
-            conn = DBUtil.getConnection();
-            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, dto.getId());
             pstmt.setString(2, dto.getCompanyId());
             pstmt.setString(3, dto.getCode());
             pstmt.setString(4, dto.getName());
-            pstmt.setString(5, dto.getType().name());
+            pstmt.setString(5, dto.getType().name()); // ENUM을 String으로 변환
 
             return pstmt.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new IllegalStateException("insert error", e);
-
-        } finally {
-            close(conn, pstmt, null);
         }
     }
 
+    // ============================================
+    // ★ 2. Soft Delete 구현 (DELETE 대신 UPDATE)
+    // ============================================
+    public int softDeleteById(String id) throws SQLException {
+        // 실제 DELETE 대신 is_active 값을 'N'(비활성)으로 변경합니다.
+        String sql = "UPDATE gl_account SET is_active = 'N' WHERE id = ?";
 
-    public List<AccountDTO> findAll(){
-        String sql = "SELECT * FROM gl_account";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
+            pstmt.setString(1, id);
+            return pstmt.executeUpdate();
+        }
+    }
 
+    // ============================================
+    // ★ 3. 전체 조회 (활성 필터링)
+    // ============================================
+    public List<AccountDTO> findAll() throws SQLException {
+        // ★ WHERE is_active = 'Y' 조건 추가
+        String sql = "SELECT * FROM gl_account WHERE is_active = 'Y'";
         List<AccountDTO> accountInfo = new ArrayList<>();
 
-        try {
-            conn = DBUtil.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            rs = pstmt.executeQuery();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
                 AccountDTO dto = new AccountDTO();
@@ -61,75 +61,38 @@ public class AccountDAO {
                 dto.setCompanyId(rs.getString("company_id"));
                 dto.setCode(rs.getString("code"));
                 dto.setName(rs.getString("name"));
-                dto.setType(AccountType.valueOf(rs.getString("type")));
+                dto.setType(AccountType.valueOf(rs.getString("type"))); // String을 ENUM으로 변환
 
                 accountInfo.add(dto);
             }
             return accountInfo;
-
-        } catch (SQLException e) {
-            throw new IllegalStateException("query error", e);
-
-        } finally {
-            close(conn, pstmt, rs);
         }
     }
 
+    // ============================================
+    // ★ 4. ID로 단일 조회 (활성 필터링)
+    // ============================================
+    public AccountDTO selectById(String id) throws SQLException {
+        // ★ WHERE is_active = 'Y' 조건 추가
+        String sql = "SELECT * FROM gl_account WHERE id = ? AND is_active = 'Y'";
 
-    private void close(Connection conn, PreparedStatement pstmt, ResultSet rs) {
-        try {
-            if (rs != null) rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        try {
-            if (pstmt != null) pstmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            if (conn != null) conn.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    public AccountDTO selectById(String id) {
-        String sql = "SELECT * FROM gl_account WHERE id = ?";
-
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = DBUtil.getConnection();
-            pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, id);
-            rs = pstmt.executeQuery();
 
-            if (rs.next()) {
-                AccountDTO dto = new AccountDTO();
-                dto.setId(rs.getString("id"));
-                dto.setCompanyId(rs.getString("company_id"));
-                dto.setCode(rs.getString("code"));
-                dto.setName(rs.getString("name"));
-                dto.setType(AccountType.valueOf(rs.getString("type")));
-                return dto;
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    AccountDTO dto = new AccountDTO();
+                    dto.setId(rs.getString("id"));
+                    dto.setCompanyId(rs.getString("company_id"));
+                    dto.setCode(rs.getString("code"));
+                    dto.setName(rs.getString("name"));
+                    dto.setType(AccountType.valueOf(rs.getString("type")));
+                    return dto;
+                }
             }
-            return null; // ID에 해당하는 계정이 없는 경우
-
-        } catch (SQLException e) {
-            // DAO는 데이터 접근 오류만 처리하고 Service에게 예외를 전달하는 것이 일반적입니다.
-            throw new IllegalStateException("selectById error", e);
-
-        } finally {
-            // 기존 close 유틸리티 메서드를 사용하여 자원 해제
-            close(conn, pstmt, rs);
         }
+        return null;
     }
-
-
 }
-
-
