@@ -22,7 +22,7 @@ public class FinanceController {
         while (true) {
             System.out.println("\n=== 재무 및 기준 정보 관리 ===");
             System.out.println("1. 등록 기능 (계정/계좌)");
-            System.out.println("2. 조회 기능 (리포트/목록)"); // 메뉴명 수정
+            System.out.println("2. 조회 기능 (계정/계좌 목록)"); // 메뉴명 수정
             System.out.println("3. 계정 관리 (삭제/복구/목록)");
             System.out.println("0. 이전 메뉴로");
             System.out.print("선택 > ");
@@ -117,7 +117,6 @@ public class FinanceController {
             System.out.println("\n--- 재무 정보 조회 ---");
             System.out.println("1. 계정 목록 조회 ");
             System.out.println("2. 은행계좌 목록 조회");
-            System.out.println("3. 예산 대비 실적 리포트");
             System.out.println("0. 이전 메뉴로");
             System.out.print("선택 > ");
 
@@ -131,8 +130,6 @@ public class FinanceController {
             } else if (subMenu.equals("2")) {
                 List<BankAccountDTO> bankAccountInfo = financeService.selectBankAccountInfo();
                 showBankAccountInfo(bankAccountInfo);
-            } else if (subMenu.equals("3")) {
-                showBudgetReport();
             } else {
                 throw new IllegalArgumentException("잘못된 선택입니다.");
             }
