@@ -132,3 +132,14 @@ INSERT INTO `bank_account` (`id`, `company_id`, `bank_name`, `account_no`, `acco
 INSERT INTO `budget` (`id`, `company_id`, `department_id`, `gl_account_id`, `year_month`, `budget_amount`) VALUES
                                                                                                                ('BUD-001', 'CP-001', 'DEPT-01', 'ACC-003', '202501', 1000000),
                                                                                                                ('BUD-002', 'CP-001', 'DEPT-01', 'ACC-005', '202501', 500000);
+-- 1. department 테이블에 is_active 컬럼 추가
+ALTER TABLE department
+ADD COLUMN is_active CHAR(1) DEFAULT 'Y' NOT NULL COMMENT '활성 여부';
+
+-- 2. gl_account 테이블에 is_active 컬럼 추가
+ALTER TABLE gl_account
+ADD COLUMN is_active CHAR(1) DEFAULT 'Y' NOT NULL COMMENT '활성 여부';
+
+-- 3. party 테이블에 is_active 컬럼 추가
+ALTER TABLE party
+ADD COLUMN is_active CHAR(1) DEFAULT 'Y' NOT NULL COMMENT '활성 여부';

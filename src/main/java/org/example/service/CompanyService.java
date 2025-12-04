@@ -3,6 +3,7 @@ package org.example.service;
 import org.example.dao.CompanyDAO;
 import org.example.dto.CompanyDTO;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ public class CompanyService {
     private final CompanyDAO companyDAO = new CompanyDAO();
 
     // 회사 등록
-    public CompanyDTO registerCompany(String name, String businessNo) {
+    public CompanyDTO registerCompany(String name, String businessNo) throws SQLException {
 
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("회사명은 비워둘 수 없습니다.");
@@ -33,7 +34,7 @@ public class CompanyService {
     }
 
     // 회사 수정
-    public boolean updateCompany(String id, String newName, String newBusinessNo) {
+    public boolean updateCompany(String id, String newName, String newBusinessNo) throws SQLException {
 
         CompanyDTO existing = companyDAO.selectById(id);
         if (existing == null) {
@@ -55,12 +56,12 @@ public class CompanyService {
     }
 
     // 전체 조회
-    public List<CompanyDTO> getAllCompanies() {
+    public List<CompanyDTO> getAllCompanies() throws SQLException {
         return companyDAO.selectAll();
     }
 
     // ID 조회
-    public CompanyDTO getById(String id) {
+    public CompanyDTO getById(String id) throws SQLException {
         return companyDAO.selectById(id);
     }
 }

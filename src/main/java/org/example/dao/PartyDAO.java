@@ -17,7 +17,7 @@ public class PartyDAO {
 
     // 거래처 등록 (C)
     public int insert(PartyDTO dto) throws SQLException {
-        // company_id와 registration_number 필드 추가
+        // is_active 필드를 추가하지 않아도 DB에서 DEFAULT 'Y'로 저장됨
         String sql = "INSERT INTO party (id, company_id, name, type, contact, registration_number) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBUtil.getConnection();
@@ -34,15 +34,58 @@ public class PartyDAO {
         }
     }
 
-    //  타입별 거래처 조회 (R)
+    // 1. DELETE 기능  (Soft Delete 적용)
+    // 실제 삭제 대신 is_active를 'N'으로 변경
+    public int softDeleteById(String id) throws SQLException {
+        // DTO에 is_active 필드가 없더라도, DB에 직접 UPDATE 명령을 내릴 수 있습니다.
+        String sql = "UPDATE party SET is_active = 'N' WHERE id = ?";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, id);
+            return pstmt.executeUpdate();
+        }
+    }
+
+
+    // 2. ID로 단일 거래처 조회 기능 추가 (JournalService 유효성 검사용)
+    public PartyDTO selectById(String id) throws SQLException {
+        // is_active='Y'인 활성 상태의 거래처만 조회
+        String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party WHERE id = ? AND is_active = 'Y'";
+
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, id);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    PartyDTO dto = new PartyDTO();
+                    dto.setId(rs.getString("id"));
+                    dto.setCompanyId(rs.getString("company_id"));
+                    dto.setName(rs.getString("name"));
+                    dto.setType(rs.getString("type"));
+                    dto.setContact(rs.getString("contact"));
+                    dto.setRegistrationNumber(rs.getString("registration_number"));
+                    return dto;
+                }
+            }
+        }
+        return null; // ID를 찾지 못했거나 비활성화된 경우
+    }
+    // 3. 기존 조회 기능 수정: is_active = 'Y' 필터
+
+    // 타입별 거래처 조회 (R)
     public List<PartyDTO> selectByType(String type) throws SQLException {
-        String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party WHERE type = ?";
+        // ★ is_active = 'Y' 필터 추가
+        String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party WHERE type = ? AND is_active = 'Y'";
         List<PartyDTO> partyList = new ArrayList<>();
 
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, type); // 타입(CUSTOMER 또는 VENDOR) 바인딩
+            pstmt.setString(1, type);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
@@ -60,9 +103,11 @@ public class PartyDAO {
         }
         return partyList;
     }
+
     // 거래처 전체 목록 조회
     public List<PartyDTO> selectAll() throws SQLException {
-        String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party";
+        // ★ is_active = 'Y' 필터 추가
+        String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party WHERE is_active = 'Y'";
         List<PartyDTO> partyList = new ArrayList<>();
 
         try (Connection conn = DBUtil.getConnection();
@@ -86,7 +131,8 @@ public class PartyDAO {
 
     // 거래처 이름 키워드 검색
     public List<PartyDTO> searchPartiesByName(String nameKeyword) throws SQLException {
-        String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party WHERE name LIKE ?";
+        // ★ is_active = 'Y' 필터 추가
+        String sql = "SELECT id, company_id, name, type, contact, registration_number FROM party WHERE name LIKE ? AND is_active = 'Y'";
         List<PartyDTO> partyList = new ArrayList<>();
 
         try (Connection conn = DBUtil.getConnection();
@@ -111,25 +157,23 @@ public class PartyDAO {
         return partyList;
     }
 
-    // 거래처 원장 상세 내역 조회
-    // 반환 타입을 List<PartyLedgerDTO>로 변경
+    // 거래처 원장 상세 내역 조회 (리포트용)
     public List<PartyLedgerDTO> selectLedgerLinesByPartyId(String partyId) throws SQLException {
 
-        // je(전표 헤더), jl(분개 라인), gl(계정 과목) 조인
-        // 쿼리 결과에 entry_date, description(적요), gl_account_name 포함
+        // 이 쿼리는 Journal Entry를 참조하므로 is_active를 추가하지 않습니다.
+        // 과거 거래 내역은 비활성화된 거래처라도 보여줘야 합니다.
         String sql = "SELECT " +
                 "  je.entry_date, " +
-                "  je.description, " + // 전표 헤더 적요를 사용
-                "  gl.name AS gl_account_name, " + // 계정 과목 이름
+                "  je.description, " +
+                "  gl.name AS gl_account_name, " +
                 "  jl.debit_amount, " +
                 "  jl.credit_amount " +
                 "FROM journal_entry je " +
                 "JOIN journal_line jl ON je.id = jl.journal_entry_id " +
                 "JOIN gl_account gl ON jl.gl_account_id = gl.id " +
-                "WHERE je.party_id = ? " + // 해당 거래처(party_id)로 필터링
+                "WHERE je.party_id = ? " +
                 "ORDER BY je.entry_date DESC";
 
-        // 💡 반환 타입에 맞게 리스트 생성
         List<PartyLedgerDTO> ledgerList = new ArrayList<>();
 
         try (Connection conn = DBUtil.getConnection();
@@ -139,14 +183,10 @@ public class PartyDAO {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    // PartyLedgerDTO 객체 생성
                     PartyLedgerDTO dto = new PartyLedgerDTO();
-
-                    // 명확한 필드 매핑
                     dto.setEntryDate(rs.getString("entry_date"));
-                    dto.setDescription(rs.getString("description")); // 적요
-                    dto.setGlAccountName(rs.getString("gl_account_name")); // 계정 과목 이름
-
+                    dto.setDescription(rs.getString("description"));
+                    dto.setGlAccountName(rs.getString("gl_account_name"));
                     dto.setDebitAmount(rs.getBigDecimal("debit_amount"));
                     dto.setCreditAmount(rs.getBigDecimal("credit_amount"));
 
@@ -154,8 +194,6 @@ public class PartyDAO {
                 }
             }
         }
-        return ledgerList; // PartyLedgerDTO 리스트 반환
+        return ledgerList;
     }
 }
-
-

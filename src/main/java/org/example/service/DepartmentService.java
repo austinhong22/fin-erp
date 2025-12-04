@@ -6,6 +6,7 @@ import org.example.dao.DepartmentDAO;
 import org.example.dto.CompanyDTO;
 import org.example.dto.DepartmentDTO;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class DepartmentService {
     // 1. 부서 등록
     // =========================
     // View/Controller에서는 회사ID 안 받음 (CP-001 고정)
-    public DepartmentDTO registerDepartment(String name, String code) {
+    public DepartmentDTO registerDepartment(String name, String code) throws SQLException {
 
         // 회사 존재 검증 (CP-001)
         CompanyDTO company = companyDAO.selectById(AppConfig.COMPANY_ID);
@@ -58,7 +59,7 @@ public class DepartmentService {
     // =========================
     // 2. 부서 수정 (옵션)
     // =========================
-    public boolean updateDepartment(String deptId, String newName, String newCode) {
+    public boolean updateDepartment(String deptId, String newName, String newCode) throws SQLException {
 
         DepartmentDTO existing = departmentDAO.selectById(deptId);
         if (existing == null) {
@@ -90,11 +91,31 @@ public class DepartmentService {
     // =========================
     // 3. 회사별 부서 목록 조회
     // =========================
-    public List<DepartmentDTO> getDepartmentsByCompanyId(String companyId) {
+    public List<DepartmentDTO> getDepartmentsByCompanyId(String companyId) throws SQLException {
         return departmentDAO.selectByCompanyId(companyId);
     }
 
-    public List<DepartmentDTO> getDepartments(String companyId) {
+    public List<DepartmentDTO> getDepartments(String companyId) throws SQLException {
         return departmentDAO.selectByCompanyId(AppConfig.COMPANY_ID);
+    }
+    // ===============================================
+    // 부서 삭제 기능 (Delete) - Soft Delete 로직 연결
+    // ===============================================
+        public void deleteDepartment(String deptId) throws SQLException {
+        try {
+            // DAO의 softDeleteById 호출 (SQLException 던짐)
+            int result = departmentDAO.softDeleteById(deptId);
+
+            if (result == 0) {
+                // 0을 반환했다면 ID를 찾지 못했거나 이미 비활성화된 상태
+                throw new IllegalArgumentException("부서 삭제 실패: 해당 ID를 찾을 수 없습니다.");
+            }
+        } catch (IllegalArgumentException e) {
+            // 비즈니스 오류는 그대로 던짐
+            throw e;
+        } catch (SQLException e) {
+            // DB 오류는 시스템 오류로 변환
+            throw new IllegalStateException("부서 삭제 중 DB 오류 발생: " + e.getMessage(), e);
+        }
     }
 }
