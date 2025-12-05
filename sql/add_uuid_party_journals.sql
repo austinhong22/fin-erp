@@ -65,14 +65,14 @@ WHERE p.name = '구글클라우드' AND p.id LIKE '%-%-%-%-%'  -- UUID 형식만
   AND b.account_alias = '메인운영통장'
 LIMIT 1;
 
--- 전표 8 라인: 구글클라우드 서버비용 (차변: 서버유지비 800,000 / 대변: 보통예금 800,000)
+-- 전표 8 라인: 구글클라우드 서버비용 (차변: 서버유지비 100,000 / 대변: 보통예금 100,000)
 INSERT INTO `journal_line` (`id`, `journal_entry_id`, `gl_account_id`, `department_id`, `debit_amount`, `credit_amount`, `memo`)
 SELECT 
     COALESCE(UUID(), CONCAT('JL-', DATE_FORMAT(NOW(), '%Y%m%d'), '-015')),
     @entry_id_8,
     a1.id,  -- 서버유지비
     d.id,   -- 개발팀
-    800000,
+    100000,
     0,
     '구글클라우드 서버 월 사용료'
 FROM `gl_account` a1, `department` d
@@ -86,7 +86,7 @@ SELECT
     a2.id,  -- 보통예금
     d.id,   -- 개발팀
     0,
-    800000,
+    100000,
     '구글클라우드 서버비용 지급'
 FROM `gl_account` a2, `department` d
 WHERE a2.code = '101' AND d.code = 'DEV'
@@ -109,14 +109,14 @@ WHERE p.name = '오라클' AND p.id LIKE '%-%-%-%-%'  -- UUID 형식만 선택
   AND b.account_alias = '메인운영통장'
 LIMIT 1;
 
--- 전표 9 라인: 오라클 라이선스비 (차변: 서버유지비 1,500,000 / 대변: 보통예금 1,500,000)
+-- 전표 9 라인: 오라클 라이선스비 (차변: 서버유지비 100,000 / 대변: 보통예금 100,000)
 INSERT INTO `journal_line` (`id`, `journal_entry_id`, `gl_account_id`, `department_id`, `debit_amount`, `credit_amount`, `memo`)
 SELECT 
     COALESCE(UUID(), CONCAT('JL-', DATE_FORMAT(NOW(), '%Y%m%d'), '-017')),
     @entry_id_9,
     a1.id,  -- 서버유지비
     d.id,   -- 개발팀
-    1500000,
+    100000,
     0,
     '오라클 DB 라이선스비'
 FROM `gl_account` a1, `department` d
@@ -130,7 +130,7 @@ SELECT
     a2.id,  -- 보통예금
     d.id,   -- 개발팀
     0,
-    1500000,
+    100000,
     '오라클 라이선스비 지급'
 FROM `gl_account` a2, `department` d
 WHERE a2.code = '101' AND d.code = 'DEV'
@@ -153,14 +153,14 @@ WHERE p.name = '마이크로소프트' AND p.id LIKE '%-%-%-%-%'  -- UUID 형식
   AND b.account_alias = '메인운영통장'
 LIMIT 1;
 
--- 전표 10 라인: 마이크로소프트 클라우드비 (차변: 서버유지비 600,000 / 대변: 보통예금 600,000)
+-- 전표 10 라인: 마이크로소프트 클라우드비 (차변: 서버유지비 100,000 / 대변: 보통예금 100,000)
 INSERT INTO `journal_line` (`id`, `journal_entry_id`, `gl_account_id`, `department_id`, `debit_amount`, `credit_amount`, `memo`)
 SELECT 
     COALESCE(UUID(), CONCAT('JL-', DATE_FORMAT(NOW(), '%Y%m%d'), '-019')),
     @entry_id_10,
     a1.id,  -- 서버유지비
     d.id,   -- 개발팀
-    600000,
+    100000,
     0,
     'Azure 클라우드 월 사용료'
 FROM `gl_account` a1, `department` d
@@ -174,7 +174,7 @@ SELECT
     a2.id,  -- 보통예금
     d.id,   -- 개발팀
     0,
-    600000,
+    100000,
     'Azure 클라우드비 지급'
 FROM `gl_account` a2, `department` d
 WHERE a2.code = '101' AND d.code = 'DEV'
