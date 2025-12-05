@@ -31,7 +31,7 @@ public class ReportDAO {
                 LEFT JOIN journal_entry je
                     ON je.id = jl.journal_entry_id
                    AND DATE_FORMAT(STR_TO_DATE(je.entry_date, '%Y-%m-%d'), '%Y%m') = ?
-                WHERE b.year_month = ?
+                WHERE b.year_month = ? AND d.is_active = 'Y'
                 GROUP BY d.name, ga.name, b.budget_amount
                 ORDER BY d.name, ga.name
                 """;

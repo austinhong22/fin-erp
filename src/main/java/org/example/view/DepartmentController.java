@@ -35,7 +35,7 @@ public class DepartmentController {
             System.out.println("4. 비활성 부서 목록 조회");
             System.out.println("5. 부서 사용 중지");
             System.out.println("6. 비활성 부서 복구");
-            System.out.println("0. 종료");
+            System.out.println("0. 이전 메뉴로");
             System.out.println("==============================");
             System.out.print("선택 > ");
 
