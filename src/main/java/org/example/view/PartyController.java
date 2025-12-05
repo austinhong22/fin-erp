@@ -30,7 +30,7 @@ public class PartyController {
             System.out.println("4. 거래처 사용 중지 ");
             System.out.println("5. 비활성 목록 조회");
             System.out.println("6. 거래처 복구 ");
-            System.out.println("0. 종료");
+            System.out.println("0. 이전 메뉴로");
             System.out.print("선택 > ");
 
             String menu = sc.nextLine();

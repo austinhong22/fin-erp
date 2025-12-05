@@ -35,7 +35,7 @@ public class BudgetController {
             System.out.println("2. 예산 목록 조회");
             System.out.println("3. 예산 금액 수정");
             System.out.println("4. 예산 삭제");
-            System.out.println("0. 종료하기");
+            System.out.println("0. 이전 메뉴로");
             System.out.println("==============================");
             System.out.print("메뉴 선택: ");
 
